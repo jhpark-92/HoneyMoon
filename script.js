@@ -28,6 +28,7 @@ const HOTELS = [
   {
     id: 'istanbul',
     name: 'Elysium Taksim Hotel',
+    aliases: ['엘리시움', '엘리시움 탁심', 'elysium'],
     city: '이스탄불',
     emoji: '🕌',
     lat: 41.0370, lng: 28.9856,
@@ -36,6 +37,7 @@ const HOTELS = [
   {
     id: 'cappadocia',
     name: 'Lord of Cappadocia',
+    aliases: ['로드 오브 카파도키아', '카파도키아 호텔', 'lord cappadocia'],
     city: '카파도키아',
     emoji: '🎈',
     lat: 38.6381, lng: 34.7977,
@@ -44,6 +46,7 @@ const HOTELS = [
   {
     id: 'antalya',
     name: 'Megasaray Westbeach Antalya',
+    aliases: ['메가사라이', '웨스트비치', 'megasaray', 'westbeach'],
     city: '안탈리아',
     emoji: '🏖️',
     lat: 36.8750, lng: 30.6500,
@@ -786,12 +789,31 @@ async function photonFetch(q) {
   return res.json();
 }
 
+function matchedHotels(q) {
+  const lower = q.toLowerCase();
+  return HOTELS.filter(h =>
+    h.name.toLowerCase().includes(lower) ||
+    h.city.toLowerCase().includes(lower) ||
+    (h.aliases || []).some(a => a.toLowerCase().includes(lower))
+  );
+}
+
 async function doSearch(q) {
   const drop = document.getElementById('searchDropdown');
   try {
     const translated = translateQuery(q);
     const geojson = await photonFetch(translated);
     const features = geojson.features || [];
+
+    // 등록된 호텔과 이름이 매칭되면 결과 상단에 삽입
+    const hotelHits = matchedHotels(q);
+    hotelHits.forEach(h => {
+      features.unshift({
+        _isHotel: true,
+        properties: { name: h.name, city: h.city, country: '튀르키예', osm_key: 'tourism', osm_value: 'hotel' },
+        geometry: { coordinates: [h.lng, h.lat] },
+      });
+    });
 
     if (!features.length) {
       drop.innerHTML = `<div class="sr-status">검색 결과가 없어요 😔<br><small>주요 관광지는 한국어도 가능해요<br>예: 그랜드 바자르, 아야소피아, Göreme</small></div>`;
@@ -879,7 +901,6 @@ function renderTabs() {
       <span class="tab-num" style="color:${active ? 'white' : color}">Day ${day}</span>
       <span class="tab-date">${fmtDay(day)}</span>
       ${isFlight ? '<span class="tab-badge">✈️</span>' : ''}
-      ${count > 0 ? `<span class="tab-count" style="background:${active?'rgba(255,255,255,0.35)':color}">${count}</span>` : ''}
     `;
 
     btn.addEventListener('click', () => {
