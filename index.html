@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>💑 신혼여행 튀르키예 플래너</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fonts-archive/MaruBuri/MaruBuri.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header>
+  <div class="hd-left">
+    <div class="hd-logo">💑</div>
+    <div class="hd-title">
+      <h1>신혼여행 튀르키예 플래너</h1>
+      <p>ISTANBUL · CAPPADOCIA · ANTALYA &nbsp;·&nbsp; JULY 2025</p>
+    </div>
+  </div>
+  <div class="hd-hotels">
+    <div class="hotel-chip">
+      <strong>🕌 Elysium Taksim</strong>
+      7/1–7/5 · 이스탄불
+    </div>
+    <div class="hotel-chip">
+      <strong>🎈 Lord of Cappadocia</strong>
+      7/5–7/7 · 카파도키아
+    </div>
+    <div class="hotel-chip">
+      <strong>🏖️ Megasaray Westbeach</strong>
+      7/7–7/11 · 안탈리아
+    </div>
+  </div>
+  <button class="export-btn" onclick="exportHTML()" title="현재 일정이 담긴 HTML 파일 다운로드">
+    💾 공유용 저장
+  </button>
+</header>
+
+<div class="main">
+  <div class="sidebar">
+    <!-- Day tabs -->
+    <div class="tabs-wrap">
+      <div class="tabs-label">날짜 선택</div>
+      <div class="tabs-scroller">
+        <button class="tabs-arrow" id="tabsLeft" title="이전">&#8249;</button>
+        <div class="tabs-row" id="dayTabs"></div>
+        <button class="tabs-arrow" id="tabsRight" title="다음">&#8250;</button>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="search-wrap" id="searchWrap">
+      <div class="search-header">
+        <span class="search-header-label">📍 장소 검색 (튀르키예)</span>
+        <span class="search-day-tag" id="searchDayTag">Day 1에 추가</span>
+      </div>
+      <div class="search-row">
+        <input
+          id="searchInput"
+          type="text"
+          class="search-input"
+          placeholder="예: Hagia Sophia, Göreme, Topkapi..."
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button class="search-clear" id="searchClear" title="지우기">✕</button>
+      </div>
+      <div class="search-dropdown" id="searchDropdown"></div>
+    </div>
+
+    <!-- Itinerary -->
+    <div class="itin-wrap" id="itinWrap"></div>
+  </div>
+
+  <div class="map-wrap">
+    <div id="map"></div>
+    <div class="map-btns">
+      <button class="map-btn" id="overviewBtn">🗺️ 전체 여행 경로</button>
+      <button class="map-btn" id="fitDayBtn">📍 오늘 일정 보기</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
