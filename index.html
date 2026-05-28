@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>💑 신혼여행 튀르키예 플래너</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet" />
   <style>
     @font-face {
       font-family: 'GyeonggiMillenniumBackground';
@@ -72,7 +72,7 @@
     .hd-logo { font-size: 1.6rem; line-height: 1; }
 
     .hd-title h1 {
-      font-family: 'Playfair Display', serif;
+      font-family: 'GyeonggiMillenniumBackground', 'Noto Sans KR', sans-serif;
       font-size: 1.05rem;
       font-weight: 700;
       letter-spacing: 0.3px;
@@ -831,6 +831,83 @@
     }
 
     .pop-del:hover { background: #dd3333; }
+
+    /* ── MOBILE (≤ 768px) ── */
+    @media (max-width: 768px) {
+      html, body { height: 100dvh; }
+
+      header {
+        height: auto;
+        min-height: 50px;
+        padding: 8px 13px;
+        gap: 8px;
+      }
+
+      .hd-hotels { display: none; }
+      .hd-logo { font-size: 1.3rem; }
+      .hd-title h1 { font-size: 0.92rem; }
+      .hd-title p { font-size: 0.54rem; letter-spacing: 0.8px; }
+      .export-btn { font-size: 0.65rem; padding: 5px 10px; }
+
+      /* Stack: sidebar on top, map below */
+      .main { flex-direction: column; }
+
+      .sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .itin-wrap { padding: 10px; }
+
+      /* Map: visible panel at bottom */
+      .map-wrap {
+        height: 320px;
+        flex-shrink: 0;
+        width: 100%;
+      }
+
+      .map-btns { bottom: 10px; left: 8px; gap: 5px; }
+      .map-btn { font-size: 0.66rem; padding: 6px 10px; }
+
+      /* Tabs */
+      .tabs-wrap { padding: 7px 7px 5px; }
+      .day-tab { min-width: 44px; padding: 5px 6px 4px; }
+      .tab-num { font-size: 0.75rem; }
+      .tab-date { font-size: 0.55rem; }
+
+      /* Search: prevent iOS zoom on focus */
+      .search-input { font-size: 16px; }
+
+      /* Larger touch targets */
+      .place-item { padding: 10px 10px; }
+      .drag-handle { font-size: 1.15rem; padding: 0 5px; }
+      .place-del { width: 30px; height: 30px; font-size: 1rem; }
+      .place-name { font-size: 0.82rem; }
+      .place-addr, .place-dist { font-size: 0.65rem; }
+
+      /* Hotel / flight cards */
+      .hotel-card, .flight-card { padding: 10px 12px; }
+      .flight-edit-btn { padding: 4px 8px; font-size: 0.85rem; }
+
+      /* Airport options: stack nicely */
+      .airport-opt { padding: 7px 6px; }
+      .airport-opt-code { font-size: 0.88rem; }
+      .airport-opt-name { font-size: 0.58rem; }
+      .flight-time-input { padding: 7px 8px; font-size: 16px; }
+
+      /* Day summary */
+      .day-summary { font-size: 0.68rem; }
+      .empty-day .empty-ico { font-size: 2rem; }
+      .empty-day p { font-size: 0.74rem; }
+
+      /* Touch drag: show long-press hint */
+      .drag-handle::after { content: ''; }
+      .place-item.touch-dragging {
+        opacity: 0.35;
+        box-shadow: none;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1358,6 +1435,148 @@ function setupDnD(el, day, idx) {
 }
 
 // ════════════════════════════════════════
+//  TOUCH DRAG & DROP (mobile)
+// ════════════════════════════════════════
+
+let touchDragActive = false;
+let touchClone = null;
+let touchOffX = 0, touchOffY = 0;
+
+function getTabDayFromEl(tabEl) {
+  const txt = tabEl.querySelector('.tab-num')?.textContent || '';
+  const m = txt.match(/\d+/);
+  return m ? parseInt(m[0]) : null;
+}
+
+function setupTouchDnD(el, day, idx) {
+  let pressTimer = null;
+  let startX = 0, startY = 0;
+
+  el.addEventListener('touchstart', e => {
+    const t = e.touches[0];
+    startX = t.clientX; startY = t.clientY;
+
+    pressTimer = setTimeout(() => {
+      touchDragActive = true;
+      dDay = day; dIdx = idx;
+
+      if (navigator.vibrate) navigator.vibrate(40);
+
+      el.classList.add('touch-dragging');
+
+      const rect = el.getBoundingClientRect();
+      touchOffX = t.clientX - rect.left;
+      touchOffY = t.clientY - rect.top;
+
+      touchClone = el.cloneNode(true);
+      Object.assign(touchClone.style, {
+        position: 'fixed',
+        width: rect.width + 'px',
+        top: (t.clientY - touchOffY) + 'px',
+        left: (t.clientX - touchOffX) + 'px',
+        zIndex: '9999',
+        opacity: '0.9',
+        pointerEvents: 'none',
+        boxShadow: '0 8px 28px rgba(0,0,0,0.28)',
+        transform: 'scale(1.04)',
+        transition: 'none',
+        borderRadius: '10px',
+      });
+      document.body.appendChild(touchClone);
+    }, 420);
+  }, { passive: true });
+
+  el.addEventListener('touchmove', e => {
+    if (!touchDragActive) {
+      const t = e.touches[0];
+      if (Math.abs(t.clientX - startX) > 8 || Math.abs(t.clientY - startY) > 8) {
+        clearTimeout(pressTimer);
+      }
+      return;
+    }
+    e.preventDefault();
+
+    const t = e.touches[0];
+    if (touchClone) {
+      touchClone.style.top  = (t.clientY - touchOffY) + 'px';
+      touchClone.style.left = (t.clientX - touchOffX) + 'px';
+    }
+
+    // Find element under finger
+    if (touchClone) touchClone.style.display = 'none';
+    const hit = document.elementFromPoint(t.clientX, t.clientY);
+    if (touchClone) touchClone.style.display = '';
+
+    // Highlight place target
+    document.querySelectorAll('.place-item').forEach(x => x.classList.remove('drag-over'));
+    const tItem = hit?.closest('.place-item');
+    if (tItem && tItem !== el) tItem.classList.add('drag-over');
+
+    // Highlight tab target
+    document.querySelectorAll('.day-tab').forEach(x => x.classList.remove('tab-drop-target'));
+    const tTab = hit?.closest('.day-tab');
+    if (tTab) {
+      const src    = state.itin[dDay]?.[dIdx];
+      const tabDay = getTabDayFromEl(tTab);
+      if (src && src.type !== 'hotel' && tabDay && tabDay !== dDay) {
+        tTab.classList.add('tab-drop-target');
+      }
+    }
+  }, { passive: false });
+
+  const endTouch = e => {
+    clearTimeout(pressTimer);
+    if (!touchDragActive) return;
+    touchDragActive = false;
+
+    if (touchClone) { touchClone.remove(); touchClone = null; }
+    el.classList.remove('touch-dragging');
+    document.querySelectorAll('.place-item').forEach(x => x.classList.remove('drag-over', 'touch-dragging'));
+    document.querySelectorAll('.day-tab').forEach(x => x.classList.remove('tab-drop-target'));
+
+    const t    = e.changedTouches[0];
+    const hit  = document.elementFromPoint(t.clientX, t.clientY);
+
+    // Cross-day tab drop
+    const tTab = hit?.closest('.day-tab');
+    if (tTab) {
+      const tabDay = getTabDayFromEl(tTab);
+      if (tabDay && tabDay !== dDay) {
+        const src = state.itin[dDay]?.[dIdx];
+        if (src && src.type !== 'hotel') {
+          state.itin[dDay].splice(dIdx, 1);
+          state.itin[tabDay].push(src);
+          dDay = dIdx = null;
+          saveState();
+          state.day = tabDay;
+          document.getElementById('searchDayTag').textContent = `Day ${tabDay}에 추가`;
+          renderTabs(); renderItin(); renderRoute(tabDay);
+          return;
+        }
+      }
+    }
+
+    // Same-day reorder
+    const tItem = hit?.closest('.place-item');
+    if (tItem && tItem !== el) {
+      const tIdx = parseInt(tItem.dataset.idx);
+      const tDay = parseInt(tItem.dataset.day);
+      if (tDay === dDay && tIdx !== dIdx) {
+        const arr = state.itin[dDay];
+        const [moved] = arr.splice(dIdx, 1);
+        arr.splice(tIdx, 0, moved);
+        saveState(); renderItin(); renderRoute(dDay);
+      }
+    }
+
+    dDay = dIdx = null;
+  };
+
+  el.addEventListener('touchend',   endTouch);
+  el.addEventListener('touchcancel', endTouch);
+}
+
+// ════════════════════════════════════════
 //  SEARCH (NOMINATIM)
 // ════════════════════════════════════════
 
@@ -1732,7 +1951,9 @@ function renderItin() {
   });
 
   wrap.querySelectorAll('.place-item').forEach(el => {
-    setupDnD(el, parseInt(el.dataset.day), parseInt(el.dataset.idx));
+    const d = parseInt(el.dataset.day), i = parseInt(el.dataset.idx);
+    setupDnD(el, d, i);
+    setupTouchDnD(el, d, i);
   });
 
   wrap.querySelectorAll('.flight-edit-btn').forEach(btn => {
