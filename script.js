@@ -745,16 +745,42 @@ function closeDropdown() {
   d.innerHTML = '';
 }
 
+// Photon bbox: west,south,east,north (Turkey)
 const TR_BBOX = '25.9,35.8,44.8,42.1';
 
-async function nominatimFetch(q, useCountryCode) {
-  const base = `https://nominatim.openstreetmap.org/search`
-    + `?q=${encodeURIComponent(q)}`
-    + `&format=json&limit=8&addressdetails=1&namedetails=1`
-    + `&accept-language=ko,tr,en`;
-  const url = useCountryCode
-    ? `${base}&countrycodes=tr`
-    : `${base}&viewbox=${TR_BBOX}&bounded=1`;
+// 한국어 관광지명 → 영어/터키어 변환 사전
+const KO_TRANSLATE = {
+  '그랜드 바자르': 'Kapalı Çarşı', '그랜드바자르': 'Kapalı Çarşı',
+  '카팔르차르슈': 'Kapalı Çarşı',
+  '스파이스 바자르': 'Spice Bazaar', '향신료 시장': 'Spice Bazaar',
+  '아야소피아': 'Hagia Sophia', '성소피아': 'Hagia Sophia', '하기아소피아': 'Hagia Sophia',
+  '블루모스크': 'Blue Mosque', '블루 모스크': 'Blue Mosque', '술탄아흐메트 모스크': 'Sultan Ahmed Mosque',
+  '톱카프 궁전': 'Topkapi Palace', '돌마바흐체 궁전': 'Dolmabahce Palace', '돌마바체 궁전': 'Dolmabahce Palace',
+  '갈라타 탑': 'Galata Tower', '갈라타탑': 'Galata Tower',
+  '탁심 광장': 'Taksim Square', '이스티클랄 거리': 'Istiklal Avenue',
+  '보스포러스': 'Bosphorus', '보스포루스': 'Bosphorus',
+  '괴레메': 'Göreme', '카파도키아': 'Cappadocia',
+  '우치히사르': 'Uchisar', '위르귀프': 'Ürgüp', '아바노스': 'Avanos',
+  '파묵칼레': 'Pamukkale', '히에라폴리스': 'Hierapolis',
+  '에페수스': 'Ephesus', '에페소스': 'Ephesus',
+  '베르가마': 'Pergamon', '아스펜도스': 'Aspendos',
+  '쿠샤다시': 'Kuşadası', '마르마리스': 'Marmaris', '보드룸': 'Bodrum',
+  '페티예': 'Fethiye', '외뤼데니즈': 'Ölüdeniz', '알라냐': 'Alanya',
+  '시데': 'Side', '아스펜도스': 'Aspendos',
+  '안탈리아 구시가지': 'Antalya Old Town', '칼레이치': 'Kaleiçi',
+  '이스탄불': 'Istanbul', '안탈리아': 'Antalya',
+};
+
+function translateQuery(q) {
+  const lower = q.trim().toLowerCase();
+  for (const [ko, en] of Object.entries(KO_TRANSLATE)) {
+    if (lower.includes(ko.toLowerCase())) return en;
+  }
+  return q;
+}
+
+async function photonFetch(q) {
+  const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=8&bbox=${TR_BBOX}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('fetch failed');
   return res.json();
@@ -763,23 +789,22 @@ async function nominatimFetch(q, useCountryCode) {
 async function doSearch(q) {
   const drop = document.getElementById('searchDropdown');
   try {
-    let items = await nominatimFetch(q, true);
-    if (!items.length) items = await nominatimFetch(q, false);
+    const translated = translateQuery(q);
+    const geojson = await photonFetch(translated);
+    const features = geojson.features || [];
 
-    if (!items.length) {
-      drop.innerHTML = `<div class="sr-status">검색 결과가 없어요 😔<br><small>영어·터키어로 검색해보세요<br>예: Hagia Sophia, Topkapi, Göreme</small></div>`;
+    if (!features.length) {
+      drop.innerHTML = `<div class="sr-status">검색 결과가 없어요 😔<br><small>주요 관광지는 한국어도 가능해요<br>예: 그랜드 바자르, 아야소피아, Göreme</small></div>`;
       return;
     }
 
     drop.innerHTML = '';
-    items.forEach(item => {
-      const name = item.namedetails?.['name:ko']
-                || item.namedetails?.name
-                || item.name
-                || item.display_name.split(',')[0].trim();
-
-      const addr = fmtAddr(item);
-      const ico  = placeIcon(item.category, item.type);
+    features.forEach(feat => {
+      const p    = feat.properties;
+      const name = p.name || p.street || '';
+      const addr = fmtAddr(p);
+      const ico  = placeIcon(p.osm_key, p.osm_value);
+      const [lng, lat] = feat.geometry.coordinates;
 
       const div = document.createElement('div');
       div.className = 'sr-item';
@@ -791,7 +816,7 @@ async function doSearch(q) {
         </div>`;
 
       div.addEventListener('click', () =>
-        addPlace({ name, lat: item.lat, lng: item.lon, addr })
+        addPlace({ name, lat, lng, addr })
       );
       drop.appendChild(div);
     });
@@ -800,15 +825,13 @@ async function doSearch(q) {
   }
 }
 
-function fmtAddr(item) {
-  const a = item.address || {};
+function fmtAddr(p) {
   const parts = [];
-  const city = a.city || a.town || a.municipality || a.county;
+  const city = p.city || p.town || p.village || p.county;
   if (city) parts.push(city);
-  if (a.state && a.state !== city) parts.push(a.state);
-  if (a.country) parts.push(a.country);
-  return parts.join(', ') ||
-    item.display_name.split(',').slice(1, 3).join(',').trim();
+  if (p.state && p.state !== city) parts.push(p.state);
+  if (p.country) parts.push(p.country);
+  return parts.join(', ');
 }
 
 function placeIcon(cat, type) {
