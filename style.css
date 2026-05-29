@@ -783,6 +783,11 @@ header {
 
 .pop-del:hover { background: #dd3333; }
 
+/* ── SIDEBAR TOGGLE (모바일 전용) ── */
+.sidebar-toggle {
+  display: none; /* 데스크탑에서는 숨김 */
+}
+
 /* ── MOBILE (≤ 768px) ── */
 @media (max-width: 768px) {
   html, body {
@@ -813,19 +818,54 @@ header {
     width: 100%;
     border-right: none;
     border-bottom: 1px solid var(--border);
-    /* 화면의 55%를 사이드바에 할당 */
-    flex: 0 0 55dvh;
+    flex-shrink: 0;
     overflow: hidden;
+    max-height: 50vh;
+    transition: max-height 0.35s ease;
+    position: relative;
+  }
+
+  /* 접힌 상태: 탭 영역만 노출 */
+  .sidebar.collapsed {
+    max-height: 110px;
+  }
+  .sidebar.collapsed .search-wrap,
+  .sidebar.collapsed .itin-wrap {
+    display: none;
   }
 
   .itin-wrap { padding: 10px; }
 
-  /* 나머지 45%를 지도에 할당 */
+  /* 지도: 나머지 공간 모두 차지 */
   .map-wrap {
     flex: 1 1 0;
-    min-height: 200px;
+    min-height: 150px;
     width: 100%;
     height: auto;
+  }
+
+  /* 토글 버튼 */
+  .sidebar-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 26px;
+    border: none;
+    background: #f0ebe3;
+    border-top: 1px solid var(--border);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .sidebar-toggle-icon {
+    font-size: 0.7rem;
+    color: var(--text-light);
+    transition: transform 0.25s;
+  }
+
+  .sidebar.collapsed .sidebar-toggle-icon {
+    transform: rotate(180deg);
   }
 
   .map-btns { bottom: 10px; left: 8px; gap: 5px; }

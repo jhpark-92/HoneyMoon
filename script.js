@@ -1282,6 +1282,16 @@ function init() {
 
   document.getElementById('overviewBtn').addEventListener('click', showOverview);
   document.getElementById('fitDayBtn').addEventListener('click', () => renderRoute(state.day));
+
+  // 모바일 사이드바 접기/펼치기
+  const toggleBtn = document.getElementById('sidebarToggle');
+  const sidebar   = toggleBtn?.closest('.sidebar');
+  if (toggleBtn && sidebar) {
+    toggleBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('collapsed');
+      setTimeout(() => map.invalidateSize(), 380);
+    });
+  }
 }
 
 document.addEventListener('DOMContentLoaded', init);
