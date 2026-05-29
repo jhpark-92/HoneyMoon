@@ -1767,29 +1767,31 @@ async function init() {
 
 
   // 모바일 사이드바 드래그 리사이즈
+  // Pointer Events + setPointerCapture: 손가락이 핸들 밖으로 나가도 추적 유지
   const handle  = document.getElementById('sidebarToggle');
   const sidebar = document.querySelector('.sidebar');
   if (handle && sidebar) {
-    let dragStartY = 0, dragStartH = 0;
-    const MIN_H = 84;   // 탭만 보이는 최소 높이
+    let active = false, startY = 0, startH = 0;
+    const MIN_H  = 84;
     const getMaxH = () => window.innerHeight * 0.80;
 
-    handle.addEventListener('touchstart', e => {
+    handle.addEventListener('pointerdown', e => {
+      active  = true;
+      startY  = e.clientY;
+      startH  = sidebar.offsetHeight;
+      handle.setPointerCapture(e.pointerId); // 핸들 밖으로 이동해도 이벤트 계속 수신
       e.preventDefault();
-      dragStartY = e.touches[0].clientY;
-      dragStartH = sidebar.getBoundingClientRect().height;
-    }, { passive: false });
-
-    handle.addEventListener('touchmove', e => {
-      e.preventDefault();
-      const dy   = e.touches[0].clientY - dragStartY;
-      const newH = Math.min(Math.max(dragStartH + dy, MIN_H), getMaxH());
-      sidebar.style.height = newH + 'px';
-    }, { passive: false });
-
-    handle.addEventListener('touchend', () => {
-      map.invalidateSize();
     });
+
+    handle.addEventListener('pointermove', e => {
+      if (!active) return;
+      const dy   = e.clientY - startY;
+      const newH = Math.min(Math.max(startH + dy, MIN_H), getMaxH());
+      sidebar.style.height = newH + 'px';
+    });
+
+    handle.addEventListener('pointerup',     () => { if (active) { active = false; map.invalidateSize(); } });
+    handle.addEventListener('pointercancel', () => { active = false; });
   }
 }
 

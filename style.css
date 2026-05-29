@@ -1083,6 +1083,7 @@ header {
 /* ── SIDEBAR RESIZE HANDLE (모바일 전용) ── */
 .sidebar-toggle {
   display: none; /* 데스크탑에서는 숨김 */
+  touch-action: none; /* pointerdown 전에 브라우저 스크롤 방지 */
 }
 
 /* 핸들 pill — 데스크탑에서도 display:none이니 실제론 모바일만 적용됨 */
