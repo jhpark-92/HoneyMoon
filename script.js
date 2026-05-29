@@ -137,10 +137,10 @@ function loadState() {
     try {
       const hash = location.hash.slice(1);
       if (hash) {
-        const p = JSON.parse(decodeURIComponent(atob(hash)));
+        const json = decodeData(hash);
+        const p = JSON.parse(json);
         applyParsed(p);
-        // 해시 데이터를 localStorage에도 저장
-        localStorage.setItem('honeymoon-turkey-2025', JSON.stringify(p));
+        localStorage.setItem('honeymoon-turkey-2025', json);
         for (let d = 1; d <= TOTAL_DAYS; d++) ensureHotelInDay(d);
         return;
       }
@@ -154,13 +154,28 @@ function loadState() {
   for (let d = 1; d <= TOTAL_DAYS; d++) ensureHotelInDay(d);
 }
 
+function encodeData(json) {
+  // LZString으로 압축 후 URL 해시에 안전한 base64로 인코딩
+  if (typeof LZString !== 'undefined') {
+    return 'z' + LZString.compressToEncodedURIComponent(json);
+  }
+  return btoa(unescape(encodeURIComponent(json)));
+}
+
+function decodeData(hash) {
+  if (hash.startsWith('z') && typeof LZString !== 'undefined') {
+    return LZString.decompressFromEncodedURIComponent(hash.slice(1));
+  }
+  // 구버전 호환 (압축 없이 저장된 데이터)
+  return decodeURIComponent(escape(atob(hash)));
+}
+
 function saveState() {
   const data = { itin: state.itin, flights: state.flights };
   const json = JSON.stringify(data);
   localStorage.setItem('honeymoon-turkey-2025', json);
-  // URL 해시에도 인코딩 → 이 URL을 모바일에서 열면 같은 데이터 로드
   try {
-    history.replaceState(null, '', '#' + btoa(encodeURIComponent(json)));
+    history.replaceState(null, '', '#' + encodeData(json));
   } catch (_) {}
 }
 
@@ -1282,6 +1297,24 @@ function init() {
 
   document.getElementById('overviewBtn').addEventListener('click', showOverview);
   document.getElementById('fitDayBtn').addEventListener('click', () => renderRoute(state.day));
+
+  // QR 모달
+  const qrBtn      = document.getElementById('qrBtn');
+  const qrModal    = document.getElementById('qrModal');
+  const qrModalClose = document.getElementById('qrModalClose');
+  const qrImg      = document.getElementById('qrImg');
+
+  qrBtn.addEventListener('click', () => {
+    const url = location.href.split('#')[0] + '#' + encodeData(
+      JSON.stringify({ itin: state.itin, flights: state.flights })
+    );
+    const api = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
+    qrImg.src = api;
+    qrModal.classList.add('open');
+  });
+
+  qrModalClose.addEventListener('click', () => qrModal.classList.remove('open'));
+  qrModal.addEventListener('click', e => { if (e.target === qrModal) qrModal.classList.remove('open'); });
 
   // 모바일 사이드바 접기/펼치기
   const toggleBtn = document.getElementById('sidebarToggle');

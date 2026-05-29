@@ -783,6 +783,85 @@ header {
 
 .pop-del:hover { background: #dd3333; }
 
+/* ── QR 버튼 ── */
+.qr-btn {
+  background: rgba(255,255,255,0.18);
+  border: 1.5px solid rgba(255,255,255,0.35);
+  border-radius: 9px;
+  color: white;
+  font-size: 1.1rem;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.qr-btn:hover { background: rgba(255,255,255,0.32); }
+
+/* ── QR 모달 ── */
+.qr-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+}
+.qr-modal.open { display: flex; }
+
+.qr-modal-box {
+  background: white;
+  border-radius: 18px;
+  padding: 28px 32px 24px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+  max-width: 300px;
+  width: 90%;
+}
+
+.qr-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  border: none;
+  background: none;
+  font-size: 1rem;
+  color: var(--text-light);
+  cursor: pointer;
+}
+
+.qr-modal-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.qr-modal-desc {
+  font-size: 0.75rem;
+  color: var(--text-mid);
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+
+.qr-img-wrap {
+  width: 200px;
+  height: 200px;
+  margin: 0 auto;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f5f0e8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.qr-img-wrap img { width: 200px; height: 200px; }
+
 /* ── SIDEBAR TOGGLE (모바일 전용) ── */
 .sidebar-toggle {
   display: none; /* 데스크탑에서는 숨김 */
