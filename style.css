@@ -414,11 +414,17 @@ header {
 }
 
 .sr-popular-header {
-  padding: 8px 12px 5px;
-  font-size: 0.65rem;
+  padding: 8px 12px 6px;
+  font-size: 0.68rem;
   font-weight: 700;
-  color: var(--text-light);
-  letter-spacing: 0.4px;
+  color: var(--text-mid);
+  letter-spacing: 0.3px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sr-section-label {
+  padding: 7px 12px 4px;
+  background: #faf7f3;
   border-bottom: 1px solid var(--border);
 }
 

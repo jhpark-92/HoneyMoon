@@ -800,40 +800,88 @@ function initTabsNav() {
 
 const POPULAR = {
   istanbul: [
-    { name: '아야소피아',      en: 'Hagia Sophia',         lat: 41.0086, lng: 28.9802, cat: '관광지' },
-    { name: '블루 모스크',     en: 'Blue Mosque',          lat: 41.0054, lng: 28.9768, cat: '관광지' },
-    { name: '그랜드 바자르',   en: 'Kapalı Çarşı',         lat: 41.0108, lng: 28.9680, cat: '쇼핑' },
-    { name: '톱카프 궁전',     en: 'Topkapi Palace',       lat: 41.0115, lng: 28.9833, cat: '관광지' },
-    { name: '갈라타 탑',       en: 'Galata Tower',         lat: 41.0256, lng: 28.9742, cat: '관광지' },
-    { name: '바실리카 시스턴', en: 'Basilica Cistern',     lat: 41.0082, lng: 28.9779, cat: '관광지' },
-    { name: '스파이스 바자르', en: 'Spice Bazaar',         lat: 41.0163, lng: 28.9706, cat: '쇼핑' },
-    { name: '돌마바흐체 궁전', en: 'Dolmabahce Palace',    lat: 41.0391, lng: 29.0007, cat: '관광지' },
-    { name: '이스티클랄 거리', en: 'Istiklal Avenue',      lat: 41.0331, lng: 28.9772, cat: '관광지' },
-    { name: '보스포러스 해협', en: 'Bosphorus',            lat: 41.0823, lng: 29.0544, cat: '자연' },
+    // 볼거리
+    { name: '아야소피아',           en: 'Hagia Sophia',              lat: 41.0086, lng: 28.9802, cat: '관광지' },
+    { name: '블루 모스크',          en: 'Blue Mosque',               lat: 41.0054, lng: 28.9768, cat: '관광지' },
+    { name: '톱카프 궁전',          en: 'Topkapi Palace',            lat: 41.0115, lng: 28.9833, cat: '관광지' },
+    { name: '갈라타 탑',            en: 'Galata Tower',              lat: 41.0256, lng: 28.9742, cat: '관광지' },
+    { name: '바실리카 시스턴',      en: 'Basilica Cistern',          lat: 41.0082, lng: 28.9779, cat: '관광지' },
+    { name: '돌마바흐체 궁전',      en: 'Dolmabahce Palace',         lat: 41.0391, lng: 29.0007, cat: '관광지' },
+    { name: '피에르 로티 언덕',     en: 'Pierre Loti Hill Istanbul', lat: 41.0348, lng: 28.9390, cat: '관광지' },
+    // 쇼핑
+    { name: '그랜드 바자르',        en: 'Kapalı Çarşı',              lat: 41.0108, lng: 28.9680, cat: '쇼핑' },
+    { name: '스파이스 바자르',      en: 'Spice Bazaar',              lat: 41.0163, lng: 28.9706, cat: '쇼핑' },
+    { name: '이스티클랄 거리',      en: 'Istiklal Avenue',           lat: 41.0331, lng: 28.9772, cat: '쇼핑' },
+    { name: '니샨타쉬',             en: 'Nişantaşı Istanbul',        lat: 41.0478, lng: 28.9940, cat: '쇼핑' },
+    { name: '아라스타 바자르',      en: 'Arasta Bazaar Istanbul',    lat: 41.0054, lng: 28.9782, cat: '쇼핑' },
+    // 식당·카페
+    { name: '술탄아흐메트 쾨프테치시', en: 'Sultanahmet Köftecisi', lat: 41.0077, lng: 28.9770, cat: '식당' },
+    { name: '카라쾨이 귀뤼올루',    en: 'Karaköy Güllüoğlu',        lat: 41.0238, lng: 28.9742, cat: '카페·디저트' },
+    { name: '하피즈 무스타파',      en: 'Hafız Mustafa 1864',        lat: 41.0109, lng: 28.9783, cat: '카페·디저트' },
+    { name: '갈라타 다리 발릭 에크멕', en: 'Galata Bridge Istanbul', lat: 41.0175, lng: 28.9724, cat: '식당' },
+    { name: '만다바트마즈 커피',    en: 'Mandabatmaz Coffee Istanbul',lat: 41.0336, lng: 28.9740, cat: '카페·디저트' },
+    { name: '카드쾨이 시장',        en: 'Kadıköy Market Istanbul',   lat: 40.9910, lng: 29.0275, cat: '식당' },
+    // 자연·전망
+    { name: '보스포러스 해협',      en: 'Bosphorus Strait Istanbul', lat: 41.0823, lng: 29.0544, cat: '자연' },
+    { name: '귈하네 공원',          en: 'Gülhane Park Istanbul',     lat: 41.0133, lng: 28.9844, cat: '자연' },
   ],
   cappadocia: [
-    { name: '괴레메 야외박물관',   en: 'Göreme Open Air Museum',      lat: 38.6431, lng: 34.8295, cat: '관광지' },
-    { name: '우치히사르 성',       en: 'Uchisar Castle',              lat: 38.6263, lng: 34.7964, cat: '관광지' },
-    { name: '데린쿠유 지하도시',   en: 'Derinkuyu Underground City',  lat: 38.3742, lng: 34.7347, cat: '관광지' },
-    { name: '러브밸리',            en: 'Love Valley Cappadocia',      lat: 38.6617, lng: 34.8256, cat: '자연' },
-    { name: '파샤바그 버섯바위',   en: 'Pasabag Monks Valley',        lat: 38.6814, lng: 34.8197, cat: '자연' },
-    { name: '아바노스',            en: 'Avanos',                      lat: 38.7167, lng: 34.8519, cat: '관광지' },
-    { name: '위르귀프',            en: 'Ürgüp',                       lat: 38.6300, lng: 34.9167, cat: '관광지' },
+    // 볼거리
+    { name: '괴레메 야외박물관',    en: 'Göreme Open Air Museum',    lat: 38.6431, lng: 34.8295, cat: '관광지' },
+    { name: '우치히사르 성',        en: 'Uchisar Castle',            lat: 38.6263, lng: 34.7964, cat: '관광지' },
+    { name: '데린쿠유 지하도시',    en: 'Derinkuyu Underground City',lat: 38.3742, lng: 34.7347, cat: '관광지' },
+    { name: '카이마클리 지하도시',  en: 'Kaymaklı Underground City', lat: 38.2530, lng: 34.7226, cat: '관광지' },
+    { name: '아바노스',             en: 'Avanos Cappadocia',         lat: 38.7167, lng: 34.8519, cat: '관광지' },
+    { name: '위르귀프',             en: 'Ürgüp Cappadocia',          lat: 38.6300, lng: 34.9167, cat: '관광지' },
+    // 자연
+    { name: '러브밸리',             en: 'Love Valley Cappadocia',    lat: 38.6617, lng: 34.8256, cat: '자연' },
+    { name: '파샤바그 버섯바위',    en: 'Pasabag Monks Valley',      lat: 38.6814, lng: 34.8197, cat: '자연' },
+    { name: '데블렌트 상상의 계곡', en: 'Devrent Valley Cappadocia', lat: 38.6826, lng: 34.8610, cat: '자연' },
+    { name: '레드밸리 선셋 포인트', en: 'Red Valley Cappadocia',     lat: 38.6526, lng: 34.8680, cat: '자연' },
+    // 체험
+    { name: '열기구 투어',          en: 'Hot Air Balloon Göreme',    lat: 38.6453, lng: 34.8317, cat: '체험' },
+    { name: '아바노스 도자기 체험', en: 'Avanos Pottery Workshop',   lat: 38.7167, lng: 34.8519, cat: '체험' },
+    // 식당·카페
+    { name: '디벡 레스토랑',        en: 'Dibek Restaurant Göreme',   lat: 38.6433, lng: 34.8280, cat: '식당' },
+    { name: '로컬 케밥 (괴레메)',   en: 'Pita Kebab Göreme',         lat: 38.6440, lng: 34.8295, cat: '식당' },
+    { name: '동굴 카페 (위르귀프)', en: 'Cave Wine Bar Ürgüp',       lat: 38.6295, lng: 34.9160, cat: '카페·디저트' },
+    // 쇼핑
+    { name: '도자기·기념품 거리',   en: 'Souvenir Street Göreme',    lat: 38.6435, lng: 34.8290, cat: '쇼핑' },
   ],
   antalya: [
-    { name: '칼레이치 구시가지',   en: 'Kaleiçi Old Town Antalya',    lat: 36.8856, lng: 30.7056, cat: '관광지' },
-    { name: '두든 폭포',           en: 'Düden Waterfalls',            lat: 36.9022, lng: 30.7408, cat: '자연' },
-    { name: '아스펜도스',          en: 'Aspendos',                    lat: 36.9413, lng: 31.1720, cat: '관광지' },
-    { name: '페르게 유적',         en: 'Perge Ancient City',          lat: 36.9605, lng: 30.8540, cat: '관광지' },
-    { name: '테르미소스',          en: 'Termessos',                   lat: 37.0444, lng: 30.4639, cat: '관광지' },
-    { name: '카라알리오을루 공원', en: 'Karaalioglu Park Antalya',    lat: 36.8806, lng: 30.7108, cat: '자연' },
-    { name: '올드 바자르',         en: 'Old Bazaar Antalya',          lat: 36.8861, lng: 30.7046, cat: '쇼핑' },
-    { name: '뤼스텀파샤 카라반',   en: 'Mermerli Beach Antalya',      lat: 36.8834, lng: 30.7074, cat: '자연' },
+    // 볼거리
+    { name: '칼레이치 구시가지',    en: 'Kaleiçi Old Town Antalya',  lat: 36.8856, lng: 30.7056, cat: '관광지' },
+    { name: '하드리아누스 문',      en: 'Hadrian\'s Gate Antalya',   lat: 36.8860, lng: 30.7064, cat: '관광지' },
+    { name: '아스펜도스',           en: 'Aspendos Ancient Theatre',  lat: 36.9413, lng: 31.1720, cat: '관광지' },
+    { name: '페르게 유적',          en: 'Perge Ancient City',        lat: 36.9605, lng: 30.8540, cat: '관광지' },
+    { name: '테르미소스',           en: 'Termessos Ancient City',    lat: 37.0444, lng: 30.4639, cat: '관광지' },
+    { name: '안탈리아 박물관',      en: 'Antalya Museum',            lat: 36.8800, lng: 30.6868, cat: '관광지' },
+    // 자연·해변
+    { name: '두든 폭포',            en: 'Düden Waterfalls Antalya',  lat: 36.9022, lng: 30.7408, cat: '자연' },
+    { name: '코냐알트 해변',        en: 'Konyaaltı Beach Antalya',   lat: 36.8700, lng: 30.6600, cat: '자연' },
+    { name: '라라 해변',            en: 'Lara Beach Antalya',        lat: 36.8600, lng: 30.8200, cat: '자연' },
+    { name: '카라알리오을루 공원',  en: 'Karaalioglu Park Antalya',  lat: 36.8806, lng: 30.7108, cat: '자연' },
+    // 식당·카페
+    { name: '메르메를리 레스토랑',  en: 'Mermerli Restaurant Antalya',lat: 36.8834, lng: 30.7074, cat: '식당' },
+    { name: '반 레스토랑',          en: 'Van Restaurant Antalya',    lat: 36.8858, lng: 30.7052, cat: '식당' },
+    { name: '올드 타운 카페거리',   en: 'Kaleiçi Cafe Street',       lat: 36.8850, lng: 30.7060, cat: '카페·디저트' },
+    { name: '안탈리아 마리나',      en: 'Antalya Old Harbour Marina', lat: 36.8830, lng: 30.6980, cat: '식당' },
+    // 쇼핑
+    { name: '올드 바자르',          en: 'Old Bazaar Antalya',        lat: 36.8861, lng: 30.7046, cat: '쇼핑' },
+    { name: '마크 안탈리아 (쇼핑몰)', en: 'Mark Antalya Mall',       lat: 36.8953, lng: 30.6875, cat: '쇼핑' },
   ],
 };
 
-const CAT_COLOR = { '관광지': '#1a6e8a', '쇼핑': '#6a1b9a', '자연': '#2e7d32', '식당': '#e05a00' };
-const CAT_ICON  = { '관광지': '🗺️', '쇼핑': '🛍️', '자연': '🌿', '식당': '🍽️' };
+const CAT_COLOR = {
+  '관광지': '#1a6e8a', '쇼핑': '#6a1b9a',
+  '자연': '#2e7d32',  '식당': '#e05a00',
+  '카페·디저트': '#a0522d', '체험': '#c0392b',
+};
+const CAT_ICON = {
+  '관광지': '🗺️', '쇼핑': '🛍️',
+  '자연': '🌿',  '식당': '🍽️',
+  '카페·디저트': '☕', '체험': '🎈',
+};
 
 function cityOfDay(day) {
   if (day <= 4)  return 'istanbul';
@@ -842,31 +890,46 @@ function cityOfDay(day) {
 }
 
 function showPopular() {
-  const drop  = document.getElementById('searchDropdown');
-  const city  = cityOfDay(state.day);
-  const list  = POPULAR[city] || [];
-  const cityName = city === 'istanbul' ? '이스탄불' : city === 'cappadocia' ? '카파도키아' : '안탈리아';
+  const drop     = document.getElementById('searchDropdown');
+  const city     = cityOfDay(state.day);
+  const list     = POPULAR[city] || [];
+  const cityName = { istanbul: '이스탄불', cappadocia: '카파도키아', antalya: '안탈리아' }[city];
 
-  drop.innerHTML = `<div class="sr-popular-header">📍 ${cityName} 인기 장소</div>`;
+  drop.innerHTML = `<div class="sr-popular-header">✨ ${cityName} 추천 장소</div>`;
+
+  // 카테고리별로 그루핑해서 표시
+  const groups = {};
   list.forEach(pl => {
-    const color = CAT_COLOR[pl.cat] || '#8a7a72';
-    const icon  = CAT_ICON[pl.cat]  || '📍';
-    const div = document.createElement('div');
-    div.className = 'sr-item';
-    div.innerHTML = `
-      <span class="sr-icon">${icon}</span>
-      <div class="sr-text">
-        <div class="sr-name">${pl.name}</div>
-        <div class="sr-meta">
-          <span class="sr-badge" style="background:${color}">${pl.cat}</span>
-          <span class="sr-addr">${pl.en}</span>
-        </div>
-      </div>`;
-    div.addEventListener('click', () =>
-      addPlace({ name: pl.name, lat: pl.lat, lng: pl.lng, addr: pl.en })
-    );
-    drop.appendChild(div);
+    if (!groups[pl.cat]) groups[pl.cat] = [];
+    groups[pl.cat].push(pl);
   });
+
+  Object.entries(groups).forEach(([cat, places]) => {
+    const color = CAT_COLOR[cat] || '#8a7a72';
+    const icon  = CAT_ICON[cat]  || '📍';
+
+    // 카테고리 소제목
+    const sec = document.createElement('div');
+    sec.className = 'sr-section-label';
+    sec.innerHTML = `<span class="sr-badge" style="background:${color}">${icon} ${cat}</span>`;
+    drop.appendChild(sec);
+
+    places.forEach(pl => {
+      const div = document.createElement('div');
+      div.className = 'sr-item';
+      div.innerHTML = `
+        <span class="sr-icon">${icon}</span>
+        <div class="sr-text">
+          <div class="sr-name">${pl.name}</div>
+          <div class="sr-meta"><span class="sr-addr">${pl.en}</span></div>
+        </div>`;
+      div.addEventListener('click', () =>
+        addPlace({ name: pl.name, lat: pl.lat, lng: pl.lng, addr: pl.en })
+      );
+      drop.appendChild(div);
+    });
+  });
+
   drop.classList.add('open');
 }
 
