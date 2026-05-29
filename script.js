@@ -73,7 +73,7 @@ const AIRPORT_OPTIONS = {
 
 // 확정된 전체 항공편 (국제선 포함)
 const BOOKED_FLIGHTS = [
-  { date: '7/1',  depDay: 1,  dep: 'ICN', arr: 'IST', depTime: '00:25', arrTime: null,  flightNo: 'OZ0551', tag: '출국' },
+  { date: '7/1',  depDay: 1,  dep: 'ICN', arr: 'IST', depTime: '10:25', arrTime: null,  flightNo: 'OZ0551', tag: '출국' },
   { date: '7/5',  depDay: 5,  dep: 'IST', arr: 'NAV', depTime: '13:45', arrTime: '15:05', flightNo: 'TK2006', tag: null  },
   { date: '7/7',  depDay: 7,  dep: 'ASR', arr: 'AYT', depTime: '21:20', arrTime: '22:40', flightNo: 'XQ7033', tag: null  },
   { date: '7/11', depDay: 11, dep: 'AYT', arr: 'IST', depTime: '13:50', arrTime: '15:25', flightNo: 'TK2417', tag: null  },
