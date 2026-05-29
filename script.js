@@ -794,15 +794,97 @@ function initTabsNav() {
   });
 }
 
+// ════════════════════════════════════════
+//  POPULAR PLACES (도시별 추천 장소)
+// ════════════════════════════════════════
+
+const POPULAR = {
+  istanbul: [
+    { name: '아야소피아',      en: 'Hagia Sophia',         lat: 41.0086, lng: 28.9802, cat: '관광지' },
+    { name: '블루 모스크',     en: 'Blue Mosque',          lat: 41.0054, lng: 28.9768, cat: '관광지' },
+    { name: '그랜드 바자르',   en: 'Kapalı Çarşı',         lat: 41.0108, lng: 28.9680, cat: '쇼핑' },
+    { name: '톱카프 궁전',     en: 'Topkapi Palace',       lat: 41.0115, lng: 28.9833, cat: '관광지' },
+    { name: '갈라타 탑',       en: 'Galata Tower',         lat: 41.0256, lng: 28.9742, cat: '관광지' },
+    { name: '바실리카 시스턴', en: 'Basilica Cistern',     lat: 41.0082, lng: 28.9779, cat: '관광지' },
+    { name: '스파이스 바자르', en: 'Spice Bazaar',         lat: 41.0163, lng: 28.9706, cat: '쇼핑' },
+    { name: '돌마바흐체 궁전', en: 'Dolmabahce Palace',    lat: 41.0391, lng: 29.0007, cat: '관광지' },
+    { name: '이스티클랄 거리', en: 'Istiklal Avenue',      lat: 41.0331, lng: 28.9772, cat: '관광지' },
+    { name: '보스포러스 해협', en: 'Bosphorus',            lat: 41.0823, lng: 29.0544, cat: '자연' },
+  ],
+  cappadocia: [
+    { name: '괴레메 야외박물관',   en: 'Göreme Open Air Museum',      lat: 38.6431, lng: 34.8295, cat: '관광지' },
+    { name: '우치히사르 성',       en: 'Uchisar Castle',              lat: 38.6263, lng: 34.7964, cat: '관광지' },
+    { name: '데린쿠유 지하도시',   en: 'Derinkuyu Underground City',  lat: 38.3742, lng: 34.7347, cat: '관광지' },
+    { name: '러브밸리',            en: 'Love Valley Cappadocia',      lat: 38.6617, lng: 34.8256, cat: '자연' },
+    { name: '파샤바그 버섯바위',   en: 'Pasabag Monks Valley',        lat: 38.6814, lng: 34.8197, cat: '자연' },
+    { name: '아바노스',            en: 'Avanos',                      lat: 38.7167, lng: 34.8519, cat: '관광지' },
+    { name: '위르귀프',            en: 'Ürgüp',                       lat: 38.6300, lng: 34.9167, cat: '관광지' },
+  ],
+  antalya: [
+    { name: '칼레이치 구시가지',   en: 'Kaleiçi Old Town Antalya',    lat: 36.8856, lng: 30.7056, cat: '관광지' },
+    { name: '두든 폭포',           en: 'Düden Waterfalls',            lat: 36.9022, lng: 30.7408, cat: '자연' },
+    { name: '아스펜도스',          en: 'Aspendos',                    lat: 36.9413, lng: 31.1720, cat: '관광지' },
+    { name: '페르게 유적',         en: 'Perge Ancient City',          lat: 36.9605, lng: 30.8540, cat: '관광지' },
+    { name: '테르미소스',          en: 'Termessos',                   lat: 37.0444, lng: 30.4639, cat: '관광지' },
+    { name: '카라알리오을루 공원', en: 'Karaalioglu Park Antalya',    lat: 36.8806, lng: 30.7108, cat: '자연' },
+    { name: '올드 바자르',         en: 'Old Bazaar Antalya',          lat: 36.8861, lng: 30.7046, cat: '쇼핑' },
+    { name: '뤼스텀파샤 카라반',   en: 'Mermerli Beach Antalya',      lat: 36.8834, lng: 30.7074, cat: '자연' },
+  ],
+};
+
+const CAT_COLOR = { '관광지': '#1a6e8a', '쇼핑': '#6a1b9a', '자연': '#2e7d32', '식당': '#e05a00' };
+const CAT_ICON  = { '관광지': '🗺️', '쇼핑': '🛍️', '자연': '🌿', '식당': '🍽️' };
+
+function cityOfDay(day) {
+  if (day <= 4)  return 'istanbul';
+  if (day <= 6)  return 'cappadocia';
+  return 'antalya';
+}
+
+function showPopular() {
+  const drop  = document.getElementById('searchDropdown');
+  const city  = cityOfDay(state.day);
+  const list  = POPULAR[city] || [];
+  const cityName = city === 'istanbul' ? '이스탄불' : city === 'cappadocia' ? '카파도키아' : '안탈리아';
+
+  drop.innerHTML = `<div class="sr-popular-header">📍 ${cityName} 인기 장소</div>`;
+  list.forEach(pl => {
+    const color = CAT_COLOR[pl.cat] || '#8a7a72';
+    const icon  = CAT_ICON[pl.cat]  || '📍';
+    const div = document.createElement('div');
+    div.className = 'sr-item';
+    div.innerHTML = `
+      <span class="sr-icon">${icon}</span>
+      <div class="sr-text">
+        <div class="sr-name">${pl.name}</div>
+        <div class="sr-meta">
+          <span class="sr-badge" style="background:${color}">${pl.cat}</span>
+          <span class="sr-addr">${pl.en}</span>
+        </div>
+      </div>`;
+    div.addEventListener('click', () =>
+      addPlace({ name: pl.name, lat: pl.lat, lng: pl.lng, addr: pl.en })
+    );
+    drop.appendChild(div);
+  });
+  drop.classList.add('open');
+}
+
 function initSearch() {
   const inp   = document.getElementById('searchInput');
   const clr   = document.getElementById('searchClear');
   const drop  = document.getElementById('searchDropdown');
 
+  // 입력창 포커스 시 인기 장소 표시 (빈 상태일 때)
+  inp.addEventListener('focus', () => {
+    if (!inp.value.trim()) showPopular();
+  });
+
   inp.addEventListener('input', () => {
     const q = inp.value.trim();
     clr.classList.toggle('visible', q.length > 0);
     clearTimeout(searchTid);
+    if (!q) { showPopular(); return; }  // 입력 지우면 다시 인기 장소
     if (q.length < 2) { closeDropdown(); return; }
 
     drop.innerHTML = '<div class="sr-status">🔍 검색 중...</div>';
