@@ -136,15 +136,14 @@ async function loadState() {
     return;
   }
 
-  // 1순위: URL 파라미터 ?blob=ID (QR 스캔 후 첫 접속)
-  const urlBlob = new URLSearchParams(location.search).get('blob');
-  if (urlBlob) {
-    setBlobId(urlBlob);
-    // URL에서 파라미터 제거
+  // QR 스캔으로 들어온 경우: ?script=URL 파라미터로 자동 등록
+  const urlScript = new URLSearchParams(location.search).get('script');
+  if (urlScript) {
+    setScriptUrl(decodeURIComponent(urlScript));
     history.replaceState(null, '', location.pathname);
   }
 
-  // 2순위: 클라우드 (blob ID가 있으면 자동 로드)
+  // 1순위: 클라우드 (Apps Script URL이 있으면 자동 로드)
   const cloud = await cloudLoad();
   if (cloud) {
     applyParsed(cloud);
@@ -180,47 +179,36 @@ function decodeData(hash) {
 }
 
 // ════════════════════════════════════════
-//  CLOUD SYNC (JSONBlob)
+//  CLOUD SYNC (Google Apps Script)
 // ════════════════════════════════════════
 
-const BLOB_API = 'https://jsonblob.com/api/jsonBlob';
-const BLOB_KEY = 'honeymoon-blobid';
+const SCRIPT_URL_KEY = 'honeymoon-script-url';
 
-function getBlobId() { return localStorage.getItem(BLOB_KEY); }
-function setBlobId(id) { localStorage.setItem(BLOB_KEY, id); }
+function getScriptUrl() { return localStorage.getItem(SCRIPT_URL_KEY) || ''; }
+function setScriptUrl(url) { localStorage.setItem(SCRIPT_URL_KEY, url); }
 
 async function cloudSave(json) {
-  const id = getBlobId();
+  const url = getScriptUrl();
+  if (!url) return;
   try {
-    if (id) {
-      await fetch(`${BLOB_API}/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: json,
-      });
-    } else {
-      const res = await fetch(BLOB_API, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: json,
-      });
-      // Location 헤더에서 ID 추출 (CORS expose 필요)
-      const loc = res.headers.get('Location') || res.headers.get('location') || '';
-      let newId = loc.split('/').pop();
-      // fallback: X-Blob-Id 헤더
-      if (!newId) newId = res.headers.get('X-Blob-Id') || '';
-      if (newId) setBlobId(newId);
-    }
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' }, // GAS는 text/plain으로 받음
+      body: json,
+    });
   } catch (_) {}
 }
 
 async function cloudLoad() {
-  const id = getBlobId();
-  if (!id) return null;
+  const url = getScriptUrl();
+  if (!url) return null;
   try {
-    const res = await fetch(`${BLOB_API}/${id}`);
+    const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) return null;
-    return await res.json();
+    const data = await res.json();
+    // 빈 객체면 null 반환
+    if (!data || Object.keys(data).length === 0) return null;
+    return data;
   } catch (_) { return null; }
 }
 
@@ -1350,24 +1338,68 @@ async function init() {
   document.getElementById('overviewBtn').addEventListener('click', showOverview);
   document.getElementById('fitDayBtn').addEventListener('click', () => renderRoute(state.day));
 
+  // 설정 모달
+  const settingsBtn   = document.getElementById('settingsBtn');
+  const settingsModal = document.getElementById('settingsModal');
+  const settingsClose = document.getElementById('settingsModalClose');
+  const scriptInput   = document.getElementById('scriptUrlInput');
+  const scriptSave    = document.getElementById('scriptUrlSave');
+  const scriptClear   = document.getElementById('scriptUrlClear');
+  const syncStatus    = document.getElementById('syncStatus');
+
+  settingsBtn.addEventListener('click', () => {
+    scriptInput.value = getScriptUrl();
+    syncStatus.textContent = getScriptUrl() ? '✅ 연결됨' : '미설정';
+    syncStatus.style.color = getScriptUrl() ? '#26a69a' : 'var(--text-light)';
+    settingsModal.classList.add('open');
+  });
+  settingsClose.addEventListener('click', () => settingsModal.classList.remove('open'));
+  settingsModal.addEventListener('click', e => { if (e.target === settingsModal) settingsModal.classList.remove('open'); });
+
+  scriptSave.addEventListener('click', async () => {
+    const url = scriptInput.value.trim();
+    if (!url.startsWith('https://script.google.com')) {
+      syncStatus.textContent = '⚠️ 올바른 Apps Script URL을 입력해주세요';
+      syncStatus.style.color = '#e05555';
+      return;
+    }
+    setScriptUrl(url);
+    syncStatus.textContent = '🔄 연결 확인 중...';
+    syncStatus.style.color = 'var(--text-light)';
+    const result = await cloudLoad();
+    if (result) {
+      syncStatus.textContent = '✅ 연결 성공! 클라우드 데이터를 불러왔어요';
+      syncStatus.style.color = '#26a69a';
+      applyParsed(result);
+      for (let d = 1; d <= TOTAL_DAYS; d++) ensureHotelInDay(d);
+      renderTabs(); renderItin(); renderRoute(state.day);
+    } else {
+      syncStatus.textContent = '✅ 연결됨 (저장된 데이터 없음 - 첫 사용)';
+      syncStatus.style.color = '#26a69a';
+    }
+  });
+
+  scriptClear.addEventListener('click', () => {
+    setScriptUrl('');
+    scriptInput.value = '';
+    syncStatus.textContent = '초기화됨';
+    syncStatus.style.color = 'var(--text-light)';
+  });
+
   // QR 모달
   const qrBtn      = document.getElementById('qrBtn');
   const qrModal    = document.getElementById('qrModal');
   const qrModalClose = document.getElementById('qrModalClose');
   const qrImg      = document.getElementById('qrImg');
 
-  qrBtn.addEventListener('click', async () => {
-    // blob ID가 없으면 먼저 저장해서 생성
-    if (!getBlobId()) {
-      await cloudSave(JSON.stringify({ itin: state.itin, flights: state.flights }));
-    }
-    const id = getBlobId();
-    if (!id) {
-      alert('클라우드 저장에 실패했어요. 인터넷 연결을 확인해주세요.');
+  qrBtn.addEventListener('click', () => {
+    const scriptUrl = getScriptUrl();
+    if (!scriptUrl) {
+      alert('먼저 ⚙️ 설정에서 Apps Script URL을 등록해주세요.');
       return;
     }
-    const base = location.origin + location.pathname;
-    const shareUrl = `${base}?blob=${id}`;
+    // QR = 앱 URL + script 파라미터 → 모바일에서 스캔하면 자동 등록
+    const shareUrl = `${location.origin + location.pathname}?script=${encodeURIComponent(scriptUrl)}`;
     const api = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`;
     qrImg.src = api;
     qrModal.classList.add('open');

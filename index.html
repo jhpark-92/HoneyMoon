@@ -18,6 +18,7 @@
       <p>ISTANBUL · CAPPADOCIA · ANTALYA &nbsp;·&nbsp; JULY 2025</p>
     </div>
   </div>
+  <button class="qr-btn" id="settingsBtn" title="동기화 설정">⚙️</button>
   <button class="qr-btn" id="qrBtn" title="모바일로 일정 전송">📱</button>
 
   <div class="hd-hotels">
@@ -83,6 +84,30 @@
       <button class="map-btn" id="overviewBtn">🗺️ 전체 여행 경로</button>
       <button class="map-btn" id="fitDayBtn">📍 오늘 일정 보기</button>
     </div>
+  </div>
+</div>
+
+<!-- 설정 모달 -->
+<div class="qr-modal" id="settingsModal">
+  <div class="qr-modal-box" style="max-width:360px">
+    <button class="qr-modal-close" id="settingsModalClose">✕</button>
+    <p class="qr-modal-title">⚙️ 동기화 설정</p>
+    <p class="qr-modal-desc" style="text-align:left;margin-bottom:14px">
+      Google Apps Script URL을 입력하면<br>
+      구글 드라이브에 자동으로 저장돼요.<br>
+      <a href="https://github.com/jhpark-92/HoneyMoon/blob/main/appscript.gs" target="_blank" style="color:var(--primary);font-size:0.72rem">📄 설정 방법 보기</a>
+    </p>
+    <input
+      id="scriptUrlInput"
+      type="url"
+      placeholder="https://script.google.com/macros/s/..."
+      style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:inherit;font-size:0.8rem;outline:none;margin-bottom:10px"
+    />
+    <div style="display:flex;gap:8px">
+      <button id="scriptUrlSave" style="flex:1;padding:9px;background:var(--primary);color:white;border:none;border-radius:9px;font-family:inherit;font-weight:700;cursor:pointer;font-size:0.82rem">저장</button>
+      <button id="scriptUrlClear" style="padding:9px 14px;background:#f5f0e8;color:var(--text-mid);border:none;border-radius:9px;font-family:inherit;cursor:pointer;font-size:0.82rem">초기화</button>
+    </div>
+    <p id="syncStatus" style="margin-top:10px;font-size:0.72rem;color:var(--text-light);text-align:center"></p>
   </div>
 </div>
 
