@@ -182,10 +182,88 @@ function decodeData(hash) {
 //  CLOUD SYNC (Google Apps Script)
 // ════════════════════════════════════════
 
-const SCRIPT_URL_KEY = 'honeymoon-script-url';
+const SCRIPT_URL_KEY  = 'honeymoon-script-url';
+const GOOGLE_KEY_KEY  = 'honeymoon-google-key';
 
-function getScriptUrl() { return localStorage.getItem(SCRIPT_URL_KEY) || ''; }
-function setScriptUrl(url) { localStorage.setItem(SCRIPT_URL_KEY, url); }
+function getScriptUrl()  { return localStorage.getItem(SCRIPT_URL_KEY) || ''; }
+function setScriptUrl(u) { localStorage.setItem(SCRIPT_URL_KEY, u); }
+function getGoogleKey()  { return localStorage.getItem(GOOGLE_KEY_KEY) || ''; }
+function setGoogleKey(k) { localStorage.setItem(GOOGLE_KEY_KEY, k); }
+
+// ════════════════════════════════════════
+//  GOOGLE PLACES SEARCH (별점·리뷰 포함)
+// ════════════════════════════════════════
+
+const PLACES_API = 'https://places.googleapis.com/v1/places:searchText';
+const PLACE_FIELD_MASK = [
+  'places.displayName',
+  'places.formattedAddress',
+  'places.location',
+  'places.rating',
+  'places.userRatingCount',
+  'places.types',
+  'places.primaryTypeDisplayName',
+].join(',');
+
+// Google Places 타입 → 한국어 카테고리
+function googleTypeToKo(types = []) {
+  if (types.some(t => ['restaurant','food','meal_delivery','meal_takeaway','cafe','bakery','bar'].includes(t)))
+    return types.includes('cafe') || types.includes('bakery') ? '카페·디저트' : '식당';
+  if (types.some(t => ['tourist_attraction','museum','historic','church','mosque','place_of_worship','amusement_park','aquarium','zoo'].includes(t)))
+    return '관광지';
+  if (types.some(t => ['shopping_mall','clothing_store','jewelry_store','store','supermarket','market'].includes(t)))
+    return '쇼핑';
+  if (types.some(t => ['park','natural_feature','beach','campground'].includes(t)))
+    return '자연';
+  if (types.some(t => ['lodging','hotel'].includes(t))) return '호텔';
+  return null;
+}
+
+// 별점 → 별 이모지
+function starStr(rating) {
+  if (!rating) return '';
+  const full  = Math.floor(rating);
+  const half  = (rating - full) >= 0.5 ? '½' : '';
+  return '⭐'.repeat(full) + half + ` ${rating.toFixed(1)}`;
+}
+
+async function googlePlacesSearch(q) {
+  const key = getGoogleKey();
+  if (!key) return null;
+
+  const cityCenter = {
+    istanbul:   { lat: 41.013, lng: 28.979 },
+    cappadocia: { lat: 38.643, lng: 34.830 },
+    antalya:    { lat: 36.886, lng: 30.705 },
+  }[cityOfDay(state.day)];
+
+  const body = {
+    textQuery: q,
+    locationBias: {
+      circle: {
+        center: { latitude: cityCenter.lat, longitude: cityCenter.lng },
+        radius: 80000,
+      },
+    },
+    languageCode: 'ko',
+    maxResultCount: 10,
+  };
+
+  try {
+    const res = await fetch(PLACES_API, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': key,
+        'X-Goog-FieldMask': PLACE_FIELD_MASK,
+      },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.places || [];
+  } catch (_) { return null; }
+}
 
 async function cloudSave(json) {
   const url = getScriptUrl();
@@ -1058,12 +1136,22 @@ function matchedHotels(q) {
 
 async function doSearch(q) {
   const drop = document.getElementById('searchDropdown');
-  try {
-    const translated = translateQuery(q);
-    const geojson = await photonFetch(translated);
-    const features = geojson.features || [];
+  drop.innerHTML = '<div class="sr-status">🔍 검색 중...</div>';
+  drop.classList.add('open');
 
-    // 등록된 호텔과 이름이 매칭되면 결과 상단에 삽입
+  try {
+    // ── 구글 API 키가 있으면 Google Places 우선 ──
+    const gPlaces = await googlePlacesSearch(q);
+    if (gPlaces !== null) {
+      renderGoogleResults(drop, q, gPlaces);
+      return;
+    }
+
+    // ── 폴백: Photon ──
+    const translated = translateQuery(q);
+    const geojson    = await photonFetch(translated);
+    const features   = geojson.features || [];
+
     matchedHotels(q).forEach(h => {
       features.unshift({
         properties: { name: h.name, city: h.city, country: '튀르키예', osm_key: 'tourism', osm_value: 'hotel' },
@@ -1072,7 +1160,7 @@ async function doSearch(q) {
     });
 
     if (!features.length) {
-      drop.innerHTML = `<div class="sr-status">검색 결과가 없어요 😔<br><small>주요 관광지는 한국어도 가능해요<br>예: 그랜드 바자르, 아야소피아, Göreme</small></div>`;
+      drop.innerHTML = `<div class="sr-status">검색 결과가 없어요 😔<br><small>예: 그랜드 바자르, 아야소피아, Göreme</small></div>`;
       return;
     }
 
@@ -1097,7 +1185,6 @@ async function doSearch(q) {
             <span class="sr-addr">${esc(addr)}</span>
           </div>
         </div>`;
-
       div.addEventListener('click', () =>
         addPlace({ name, lat, lng, addr, osmKey: p.osm_key, osmValue: p.osm_value })
       );
@@ -1106,6 +1193,66 @@ async function doSearch(q) {
   } catch (_) {
     drop.innerHTML = '<div class="sr-status">검색 오류가 발생했어요 😢<br><small>인터넷 연결을 확인해주세요</small></div>';
   }
+}
+
+function renderGoogleResults(drop, q, places) {
+  if (!places.length) {
+    drop.innerHTML = `<div class="sr-status">검색 결과가 없어요 😔<br><small>다른 검색어로 시도해보세요</small></div>`;
+    return;
+  }
+
+  drop.innerHTML = '<div class="sr-popular-header">🔍 Google Places 검색 결과</div>';
+
+  // 호텔 매칭 먼저 표시
+  matchedHotels(q).forEach(h => {
+    const div = document.createElement('div');
+    div.className = 'sr-item';
+    div.innerHTML = `
+      <span class="sr-icon">🏨</span>
+      <div class="sr-text">
+        <div class="sr-name">${esc(h.name)}</div>
+        <div class="sr-meta">
+          <span class="sr-badge" style="background:#c9935a">호텔</span>
+          <span class="sr-addr">${h.city}, 튀르키예</span>
+        </div>
+      </div>`;
+    div.addEventListener('click', () => addPlace({ name: h.name, lat: h.lat, lng: h.lng, addr: h.city }));
+    drop.appendChild(div);
+  });
+
+  places.forEach(pl => {
+    const name    = pl.displayName?.text || '';
+    const addr    = pl.formattedAddress || '';
+    const lat     = pl.location?.latitude;
+    const lng     = pl.location?.longitude;
+    const rating  = pl.rating;
+    const reviews = pl.userRatingCount;
+    const types   = pl.types || [];
+    const cat     = googleTypeToKo(types);
+    const color   = CAT_COLOR[cat] || '#8a7a72';
+    const icon    = CAT_ICON[cat]  || '📍';
+
+    const ratingHtml = rating
+      ? `<span class="sr-rating">⭐ ${rating.toFixed(1)} <span class="sr-review-count">(${reviews?.toLocaleString()})</span></span>`
+      : '';
+
+    const div = document.createElement('div');
+    div.className = 'sr-item';
+    div.innerHTML = `
+      <span class="sr-icon">${icon}</span>
+      <div class="sr-text">
+        <div class="sr-name">${esc(name)}</div>
+        <div class="sr-meta">
+          ${cat ? `<span class="sr-badge" style="background:${color}">${cat}</span>` : ''}
+          ${ratingHtml}
+        </div>
+        <div class="sr-addr">${esc(addr)}</div>
+      </div>`;
+    div.addEventListener('click', () =>
+      addPlace({ name, lat, lng, addr, osmKey: '_google', osmValue: cat || '' })
+    );
+    drop.appendChild(div);
+  });
 }
 
 function fmtAddr(p) {
@@ -1546,19 +1693,55 @@ async function init() {
   document.getElementById('fitDayBtn').addEventListener('click', () => renderRoute(state.day));
 
   // 설정 모달
-  const settingsBtn   = document.getElementById('settingsBtn');
-  const settingsModal = document.getElementById('settingsModal');
-  const settingsClose = document.getElementById('settingsModalClose');
-  const scriptInput   = document.getElementById('scriptUrlInput');
-  const scriptSave    = document.getElementById('scriptUrlSave');
-  const scriptClear   = document.getElementById('scriptUrlClear');
-  const syncStatus    = document.getElementById('syncStatus');
+  const settingsBtn    = document.getElementById('settingsBtn');
+  const settingsModal  = document.getElementById('settingsModal');
+  const settingsClose  = document.getElementById('settingsModalClose');
+  const scriptInput    = document.getElementById('scriptUrlInput');
+  const scriptSave     = document.getElementById('scriptUrlSave');
+  const scriptClear    = document.getElementById('scriptUrlClear');
+  const syncStatus     = document.getElementById('syncStatus');
+  const googleKeyInput = document.getElementById('googleKeyInput');
+  const googleKeySave  = document.getElementById('googleKeySave');
+  const googleKeyClear = document.getElementById('googleKeyClear');
+  const googleKeyStatus = document.getElementById('googleKeyStatus');
 
   settingsBtn.addEventListener('click', () => {
-    scriptInput.value = getScriptUrl();
-    syncStatus.textContent = getScriptUrl() ? '✅ 연결됨' : '미설정';
-    syncStatus.style.color = getScriptUrl() ? '#26a69a' : 'var(--text-light)';
+    scriptInput.value    = getScriptUrl();
+    googleKeyInput.value = getGoogleKey();
+    syncStatus.textContent      = getScriptUrl()  ? '✅ 연결됨' : '미설정';
+    syncStatus.style.color      = getScriptUrl()  ? '#26a69a' : 'var(--text-light)';
+    googleKeyStatus.textContent = getGoogleKey()  ? '✅ 등록됨 — Google Places 검색 활성화' : '미설정 (기본 검색 사용)';
+    googleKeyStatus.style.color = getGoogleKey()  ? '#26a69a' : 'var(--text-light)';
     settingsModal.classList.add('open');
+  });
+
+  // Google API 키 저장
+  googleKeySave.addEventListener('click', async () => {
+    const key = googleKeyInput.value.trim();
+    if (!key.startsWith('AIza')) {
+      googleKeyStatus.textContent = '⚠️ 올바른 API 키를 입력해주세요 (AIza로 시작)';
+      googleKeyStatus.style.color = '#e05555';
+      return;
+    }
+    setGoogleKey(key);
+    googleKeyStatus.textContent = '🔄 키 확인 중...';
+    googleKeyStatus.style.color = 'var(--text-light)';
+    // 간단 테스트 검색
+    const test = await googlePlacesSearch('Hagia Sophia');
+    if (test && test.length > 0) {
+      googleKeyStatus.textContent = '✅ 연결 성공! 이제 별점·리뷰 검색이 가능해요';
+      googleKeyStatus.style.color = '#26a69a';
+    } else {
+      googleKeyStatus.textContent = '⚠️ 키는 저장됐으나 테스트 실패 — 도메인 제한 확인 필요';
+      googleKeyStatus.style.color = '#e07000';
+    }
+  });
+
+  googleKeyClear.addEventListener('click', () => {
+    setGoogleKey('');
+    googleKeyInput.value = '';
+    googleKeyStatus.textContent = '초기화됨';
+    googleKeyStatus.style.color = 'var(--text-light)';
   });
   settingsClose.addEventListener('click', () => settingsModal.classList.remove('open'));
   settingsModal.addEventListener('click', e => { if (e.target === settingsModal) settingsModal.classList.remove('open'); });

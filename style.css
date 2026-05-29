@@ -934,6 +934,96 @@ header {
   margin-bottom: 18px;
 }
 
+/* ── 설정 모달 섹션 ── */
+.settings-section { margin-bottom: 4px; }
+
+.settings-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 7px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.settings-badge {
+  font-size: 0.6rem;
+  font-weight: 600;
+  background: var(--bg);
+  color: var(--text-light);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1px 7px;
+}
+
+.settings-input {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  font-family: inherit;
+  font-size: 0.78rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.settings-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(26,110,138,0.08);
+}
+
+.settings-save-btn {
+  flex: 1;
+  padding: 8px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 9px;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background 0.15s;
+}
+.settings-save-btn:hover { background: var(--primary-dark); }
+
+.settings-clear-btn {
+  padding: 8px 14px;
+  background: #f5f0e8;
+  color: var(--text-mid);
+  border: none;
+  border-radius: 9px;
+  font-family: inherit;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.settings-status {
+  margin-top: 6px;
+  font-size: 0.7rem;
+  color: var(--text-light);
+  text-align: center;
+  min-height: 1em;
+}
+
+.settings-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 16px 0;
+}
+
+/* 별점 표시 */
+.sr-rating {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #e07000;
+  white-space: nowrap;
+}
+.sr-review-count {
+  font-weight: 400;
+  color: var(--text-light);
+}
+
 /* ── SIDEBAR TOGGLE (모바일 전용) ── */
 .sidebar-toggle {
   display: none; /* 데스크탑에서는 숨김 */

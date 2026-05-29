@@ -89,25 +89,43 @@
 
 <!-- 설정 모달 -->
 <div class="qr-modal" id="settingsModal">
-  <div class="qr-modal-box" style="max-width:360px">
+  <div class="qr-modal-box" style="max-width:380px">
     <button class="qr-modal-close" id="settingsModalClose">✕</button>
-    <p class="qr-modal-title">⚙️ 동기화 설정</p>
-    <p class="qr-modal-desc" style="text-align:left;margin-bottom:14px">
-      Google Apps Script URL을 입력하면<br>
-      구글 드라이브에 자동으로 저장돼요.<br>
-      <a href="https://github.com/jhpark-92/HoneyMoon/blob/main/appscript.gs" target="_blank" style="color:var(--primary);font-size:0.72rem">📄 설정 방법 보기</a>
-    </p>
-    <input
-      id="scriptUrlInput"
-      type="url"
-      placeholder="https://script.google.com/macros/s/..."
-      style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:inherit;font-size:0.8rem;outline:none;margin-bottom:10px"
-    />
-    <div style="display:flex;gap:8px">
-      <button id="scriptUrlSave" style="flex:1;padding:9px;background:var(--primary);color:white;border:none;border-radius:9px;font-family:inherit;font-weight:700;cursor:pointer;font-size:0.82rem">저장</button>
-      <button id="scriptUrlClear" style="padding:9px 14px;background:#f5f0e8;color:var(--text-mid);border:none;border-radius:9px;font-family:inherit;cursor:pointer;font-size:0.82rem">초기화</button>
+    <p class="qr-modal-title">⚙️ 설정</p>
+
+    <!-- Google Places API 키 -->
+    <div class="settings-section">
+      <p class="settings-label">🔍 Google Places API 키 <span class="settings-badge">별점·리뷰 검색</span></p>
+      <input
+        id="googleKeyInput"
+        type="text"
+        placeholder="AIza..."
+        class="settings-input"
+      />
+      <div style="display:flex;gap:8px;margin-top:7px">
+        <button id="googleKeySave" class="settings-save-btn">저장</button>
+        <button id="googleKeyClear" class="settings-clear-btn">초기화</button>
+      </div>
+      <p id="googleKeyStatus" class="settings-status"></p>
     </div>
-    <p id="syncStatus" style="margin-top:10px;font-size:0.72rem;color:var(--text-light);text-align:center"></p>
+
+    <div class="settings-divider"></div>
+
+    <!-- Apps Script URL -->
+    <div class="settings-section">
+      <p class="settings-label">☁️ Google Apps Script URL <span class="settings-badge">일정 자동 동기화</span></p>
+      <input
+        id="scriptUrlInput"
+        type="url"
+        placeholder="https://script.google.com/macros/s/..."
+        class="settings-input"
+      />
+      <div style="display:flex;gap:8px;margin-top:7px">
+        <button id="scriptUrlSave" class="settings-save-btn">저장</button>
+        <button id="scriptUrlClear" class="settings-clear-btn">초기화</button>
+      </div>
+      <p id="syncStatus" class="settings-status"></p>
+    </div>
   </div>
 </div>
 
