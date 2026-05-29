@@ -544,6 +544,8 @@ function addPlace(data) {
     lat: parseFloat(data.lat),
     lng: parseFloat(data.lng),
     addr: data.addr || '',
+    osmKey:   data.osmKey   || '',
+    osmValue: data.osmValue || '',
   });
   saveState();
   renderTabs();
@@ -797,24 +799,6 @@ function initSearch() {
   const clr   = document.getElementById('searchClear');
   const drop  = document.getElementById('searchDropdown');
 
-  // 카테고리 필터 칩 렌더링
-  const filterWrap = document.getElementById('searchFilters');
-  CATEGORY_FILTERS.forEach(cat => {
-    const btn = document.createElement('button');
-    btn.className = 'search-filter-chip' + (cat.id === 'all' ? ' active' : '');
-    btn.textContent = cat.label;
-    btn.dataset.catId = cat.id;
-    btn.addEventListener('click', () => {
-      activeCategoryId = cat.id;
-      filterWrap.querySelectorAll('.search-filter-chip').forEach(b =>
-        b.classList.toggle('active', b.dataset.catId === cat.id)
-      );
-      const q = inp.value.trim();
-      if (q.length >= 2) doSearch(q);
-    });
-    filterWrap.appendChild(btn);
-  });
-
   inp.addEventListener('input', () => {
     const q = inp.value.trim();
     clr.classList.toggle('visible', q.length > 0);
@@ -879,22 +863,8 @@ function translateQuery(q) {
   return q;
 }
 
-// 카테고리 필터 정의
-const CATEGORY_FILTERS = [
-  { id: 'all',      label: '전체',      tag: null },
-  { id: 'sights',   label: '관광지',    tag: 'tourism' },
-  { id: 'food',     label: '식당·카페', tag: 'amenity:restaurant,amenity:cafe,amenity:fast_food,amenity:bar' },
-  { id: 'shopping', label: '쇼핑',      tag: 'shop' },
-  { id: 'nature',   label: '자연',      tag: 'natural' },
-];
-let activeCategoryId = 'all';
-
-async function photonFetch(q, categoryId = 'all') {
-  const cat = CATEGORY_FILTERS.find(c => c.id === categoryId);
-  let url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=10&bbox=${TR_BBOX}`;
-  if (cat?.tag) {
-    cat.tag.split(',').forEach(t => { url += `&osm_tag=${encodeURIComponent(t)}`; });
-  }
+async function photonFetch(q) {
+  const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=10&bbox=${TR_BBOX}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('fetch failed');
   return res.json();
@@ -945,19 +915,16 @@ async function doSearch(q) {
   const drop = document.getElementById('searchDropdown');
   try {
     const translated = translateQuery(q);
-    const geojson = await photonFetch(translated, activeCategoryId);
+    const geojson = await photonFetch(translated);
     const features = geojson.features || [];
 
-    // 등록된 호텔과 이름이 매칭되면 결과 상단에 삽입 (전체 필터일 때만)
-    if (activeCategoryId === 'all') {
-      const hotelHits = matchedHotels(q);
-      hotelHits.forEach(h => {
-        features.unshift({
-          properties: { name: h.name, city: h.city, country: '튀르키예', osm_key: 'tourism', osm_value: 'hotel' },
-          geometry: { coordinates: [h.lng, h.lat] },
-        });
+    // 등록된 호텔과 이름이 매칭되면 결과 상단에 삽입
+    matchedHotels(q).forEach(h => {
+      features.unshift({
+        properties: { name: h.name, city: h.city, country: '튀르키예', osm_key: 'tourism', osm_value: 'hotel' },
+        geometry: { coordinates: [h.lng, h.lat] },
       });
-    }
+    });
 
     if (!features.length) {
       drop.innerHTML = `<div class="sr-status">검색 결과가 없어요 😔<br><small>주요 관광지는 한국어도 가능해요<br>예: 그랜드 바자르, 아야소피아, Göreme</small></div>`;
@@ -966,10 +933,10 @@ async function doSearch(q) {
 
     drop.innerHTML = '';
     features.forEach(feat => {
-      const p    = feat.properties;
-      const name = p.name || p.street || '';
-      const addr = fmtAddr(p);
-      const ico  = placeIcon(p.osm_key, p.osm_value);
+      const p     = feat.properties;
+      const name  = p.name || p.street || '';
+      const addr  = fmtAddr(p);
+      const ico   = placeIcon(p.osm_key, p.osm_value);
       const label = categoryLabel(p.osm_key, p.osm_value);
       const color = categoryColor(p.osm_key);
       const [lng, lat] = feat.geometry.coordinates;
@@ -979,12 +946,15 @@ async function doSearch(q) {
       div.innerHTML = `
         <span class="sr-icon">${ico}</span>
         <div class="sr-text">
-          <div class="sr-name">${esc(name)}${label ? `<span class="sr-badge" style="background:${color}">${label}</span>` : ''}</div>
-          <div class="sr-addr">${esc(addr)}</div>
+          <div class="sr-name">${esc(name)}</div>
+          <div class="sr-meta">
+            ${label ? `<span class="sr-badge" style="background:${color}">${label}</span>` : ''}
+            <span class="sr-addr">${esc(addr)}</span>
+          </div>
         </div>`;
 
       div.addEventListener('click', () =>
-        addPlace({ name, lat, lng, addr })
+        addPlace({ name, lat, lng, addr, osmKey: p.osm_key, osmValue: p.osm_value })
       );
       drop.appendChild(div);
     });
@@ -1178,12 +1148,19 @@ function renderItin() {
       ? (day === hotel.checkIn ? '체크인 ✅' : day === hotel.checkOut ? '체크아웃 🧳' : '숙박 🌙')
       : '';
 
+    const catLabel = (!isHotel && pl.osmKey) ? categoryLabel(pl.osmKey, pl.osmValue) : null;
+    const catColor = (!isHotel && pl.osmKey) ? categoryColor(pl.osmKey) : null;
+
     html += `
       <div class="place-item${isHotel ? ' is-hotel' : ''}" data-day="${day}" data-idx="${i}">
         <span class="drag-handle" title="드래그해서 순서 변경">⠿</span>
         ${badge}
         <div class="place-content">
-          <div class="place-name">${esc(pl.name)}</div>
+          <div class="place-name-row">
+            <span class="place-name">${esc(pl.name)}</span>
+            ${catLabel ? `<span class="place-cat-badge" style="background:${catColor}">${catLabel}</span>` : ''}
+            ${!isHotel ? `<button class="place-copy" data-name="${esc(pl.name)}" title="이름 복사">⎘</button>` : ''}
+          </div>
           ${isHotel && subLabel ? `<div class="place-addr">${subLabel}</div>` :
             pl.addr ? `<div class="place-addr">${esc(pl.addr)}</div>` : ''}
           ${prev ? `<div class="place-dist">📍 ${fromLbl} ${km.toFixed(1)}km</div>` : ''}
@@ -1212,6 +1189,19 @@ function renderItin() {
   }
 
   wrap.innerHTML = html;
+
+  wrap.querySelectorAll('.place-copy').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const name = btn.dataset.name;
+      navigator.clipboard.writeText(name).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = '✓';
+        btn.style.color = '#26a69a';
+        setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 1500);
+      });
+    });
+  });
 
   wrap.querySelectorAll('.place-del').forEach(btn => {
     btn.addEventListener('click', e => {
