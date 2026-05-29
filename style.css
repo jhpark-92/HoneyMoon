@@ -67,36 +67,6 @@ header {
   gap: 7px;
 }
 
-.hd-btns {
-  display: flex;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
-.export-btn {
-  flex-shrink: 0;
-  background: rgba(255,255,255,0.18);
-  border: 1.5px solid rgba(255,255,255,0.35);
-  border-radius: 9px;
-  color: white;
-  font-family: inherit;
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 6px 13px;
-  cursor: pointer;
-  transition: all 0.18s;
-  white-space: nowrap;
-}
-
-.export-btn:hover {
-  background: rgba(255,255,255,0.32);
-  border-color: rgba(255,255,255,0.6);
-  transform: translateY(-1px);
-}
-
-.export-btn:active {
-  transform: translateY(0);
-}
 
 .hotel-chip {
   background: rgba(255,255,255,0.14);
@@ -832,7 +802,6 @@ header {
   .hd-logo { font-size: 1.3rem; }
   .hd-title h1 { font-size: 0.92rem; }
   .hd-title p { font-size: 0.54rem; letter-spacing: 0.8px; }
-  .export-btn { font-size: 0.65rem; padding: 5px 10px; }
 
   /* 사이드바+지도를 세로로 쌓되 각각 비율로 고정 */
   .main {
