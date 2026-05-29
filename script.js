@@ -71,6 +71,15 @@ const AIRPORT_OPTIONS = {
   ],
 };
 
+// 확정된 전체 항공편 (국제선 포함)
+const BOOKED_FLIGHTS = [
+  { date: '7/1',  depDay: null, dep: 'ICN', arr: 'IST', depTime: '00:25', arrTime: null,  flightNo: 'OZ0551', tag: '출국' },
+  { date: '7/5',  depDay: 5,   dep: 'IST', arr: 'NAV', depTime: '13:45', arrTime: '15:05', flightNo: 'TK2006', tag: null  },
+  { date: '7/7',  depDay: 7,   dep: 'ASR', arr: 'AYT', depTime: '21:20', arrTime: '22:40', flightNo: 'XQ7033', tag: null  },
+  { date: '7/11', depDay: 11,  dep: 'AYT', arr: 'IST', depTime: '13:50', arrTime: '15:25', flightNo: 'TK2417', tag: null  },
+  { date: '7/11', depDay: null, dep: 'IST', arr: 'ICN', depTime: '17:30', arrTime: null,  flightNo: 'OZ0552', tag: '귀국' },
+];
+
 function hotelOfDay(day) {
   if (day <= 4) return HOTELS[0];
   if (day <= 6) return HOTELS[1];
@@ -95,7 +104,7 @@ const state = {
   ),
   flights: {
     5:  { dep: 'IST', arr: 'NAV', depTime: '', arrTime: '' },
-    7:  { depTime: '', arrTime: '' },
+    7:  { dep: 'ASR', depTime: '', arrTime: '' },
     11: { arr: 'IST', depTime: '', arrTime: '' },
   },
 };
@@ -1391,30 +1400,31 @@ function renderItin() {
   if (flight) {
     const f5 = state.flights[5];
     const f7 = state.flights[7];
-    let depCode, arrCode, depName, arrName, depTime, arrTime;
+    const bf = BOOKED_FLIGHTS.find(f => f.depDay === day);
+    let depCode, arrCode, depName, arrName;
     if (day === 5) {
       depCode = f5.dep; arrCode = f5.arr;
-      depTime = f5.depTime; arrTime = f5.arrTime;
       depName = AIRPORT_OPTIONS.istanbul.find(a => a.code === depCode)?.name || '';
       arrName = AIRPORT_OPTIONS.cappadocia.find(a => a.code === arrCode)?.name || '';
     } else if (day === 7) {
-      depCode = f5.arr; arrCode = 'AYT';
-      depTime = f7.depTime; arrTime = f7.arrTime;
+      depCode = f7.dep || f5.arr; arrCode = 'AYT';
       depName = AIRPORT_OPTIONS.cappadocia.find(a => a.code === depCode)?.name || '';
       arrName = '안탈리아 공항';
     } else {
       const f11 = state.flights[11];
       depCode = 'AYT'; arrCode = f11.arr;
-      depTime = f11.depTime; arrTime = f11.arrTime;
       depName = '안탈리아 공항';
       arrName = AIRPORT_OPTIONS.istanbul.find(a => a.code === arrCode)?.name || '';
     }
+    const depTime  = bf?.depTime || '';
+    const arrTime  = bf?.arrTime || '';
+    const flightNo = bf?.flightNo || '';
     const timeInfo = [depTime ? `출발 ${depTime}` : '', arrTime ? `도착 ${arrTime}` : ''].filter(Boolean).join(' · ');
     html += `
       <div class="flight-card" id="flightCard${day}">
         <span class="flight-card-ico">✈️</span>
         <div style="flex:1;min-width:0">
-          <div class="flight-card-route">${flight.label}</div>
+          <div class="flight-card-route">${flight.label}${flightNo ? `<span class="flight-no-badge">${flightNo}</span>` : ''}</div>
           <div class="flight-card-sub" id="flightCardSub${day}">${depCode} (${depName}) → ${arrCode} (${arrName})${timeInfo ? ' &nbsp;·&nbsp; ' + timeInfo : ''}</div>
         </div>
         <button class="flight-edit-btn" data-flight-day="${day}" title="항공편 정보 편집">✏️</button>
@@ -1568,7 +1578,7 @@ function toggleFlightEdit(day) {
         </div>
       </div>`;
   } else if (day === 7) {
-    const depCode = f5.arr;
+    const depCode = f7.dep || f5.arr;
     const depName = AIRPORT_OPTIONS.cappadocia.find(a => a.code === depCode)?.name || '';
     formHtml = `
       <div class="flight-edit-section">
@@ -1661,7 +1671,7 @@ function updateFlightCardDisplay(day) {
     depName = AIRPORT_OPTIONS.istanbul.find(a => a.code === depCode)?.name || '';
     arrName = AIRPORT_OPTIONS.cappadocia.find(a => a.code === arrCode)?.name || '';
   } else if (day === 7) {
-    depCode = f5.arr; arrCode = 'AYT';
+    depCode = f7.dep || f5.arr; arrCode = 'AYT';
     depTime = f7.depTime; arrTime = f7.arrTime;
     depName = AIRPORT_OPTIONS.cappadocia.find(a => a.code === depCode)?.name || '';
     arrName = '안탈리아 공항';
@@ -1672,7 +1682,10 @@ function updateFlightCardDisplay(day) {
     depName = '안탈리아 공항';
     arrName = AIRPORT_OPTIONS.istanbul.find(a => a.code === arrCode)?.name || '';
   }
-  const timeInfo = [depTime ? `출발 ${depTime}` : '', arrTime ? `도착 ${arrTime}` : ''].filter(Boolean).join(' · ');
+  const bf = BOOKED_FLIGHTS.find(f => f.depDay === day);
+  const finalDepTime = bf?.depTime || depTime;
+  const finalArrTime = bf?.arrTime || arrTime;
+  const timeInfo = [finalDepTime ? `출발 ${finalDepTime}` : '', finalArrTime ? `도착 ${finalArrTime}` : ''].filter(Boolean).join(' · ');
   subEl.innerHTML = `${depCode} (${depName}) → ${arrCode} (${arrName})${timeInfo ? '&nbsp;&nbsp;·&nbsp;&nbsp;' + timeInfo : ''}`;
 }
 
@@ -1680,9 +1693,30 @@ function updateFlightCardDisplay(day) {
 //  INIT
 // ════════════════════════════════════════
 
+function renderFlightSummary() {
+  const wrap = document.getElementById('flightSummary');
+  if (!wrap) return;
+  const rows = BOOKED_FLIGHTS.map(f => {
+    const intl = f.dep === 'ICN' || f.arr === 'ICN';
+    return `
+      <div class="fs-row${intl ? ' fs-intl' : ''}">
+        <span class="fs-date">${f.date}</span>
+        <span class="fs-dep-time">${f.depTime}</span>
+        <span class="fs-route">${f.dep}<span class="fs-arrow">→</span>${f.arr}</span>
+        <span class="fs-arr-time">${f.arrTime || ''}</span>
+        <span class="fs-no">${f.flightNo}</span>
+        ${f.tag ? `<span class="fs-tag">${f.tag}</span>` : '<span></span>'}
+      </div>`;
+  }).join('');
+  wrap.innerHTML = `
+    <div class="fs-title">✈️ 항공편 일정</div>
+    <div class="fs-list">${rows}</div>`;
+}
+
 async function init() {
   await loadState();
   initMap();
+  renderFlightSummary();
   renderTabs();
   renderItin();
   renderRoute(1);

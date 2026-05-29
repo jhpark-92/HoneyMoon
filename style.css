@@ -501,6 +501,61 @@ header {
   margin-top: 2px;
 }
 
+/* ── FLIGHT SUMMARY (상단 항공편 요약) ── */
+.flight-summary-wrap {
+  background: linear-gradient(135deg, rgba(123,104,238,0.07), rgba(155,137,255,0.05));
+  border-bottom: 1.5px solid rgba(123,104,238,0.16);
+  padding: 8px 12px 9px;
+  flex-shrink: 0;
+}
+.fs-title {
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: var(--flight);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.fs-list { display: flex; flex-direction: column; gap: 3px; }
+.fs-row {
+  display: grid;
+  grid-template-columns: 30px 40px 1fr 40px 56px 28px;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  padding: 4px 7px;
+  border-radius: 7px;
+  background: rgba(255,255,255,0.6);
+}
+.fs-intl { background: rgba(123,104,238,0.1); }
+.fs-date { font-size: 0.6rem; color: var(--text-light); font-weight: 600; }
+.fs-dep-time { font-weight: 800; color: var(--text); }
+.fs-route { font-weight: 600; display: flex; align-items: center; gap: 3px; }
+.fs-arrow { color: var(--text-light); font-weight: 400; font-size: 0.65rem; }
+.fs-arr-time { font-size: 0.66rem; color: var(--text-mid); }
+.fs-no { font-size: 0.64rem; color: var(--flight); font-weight: 600; }
+.fs-tag {
+  font-size: 0.54rem;
+  font-weight: 700;
+  background: var(--flight);
+  color: white;
+  padding: 2px 5px;
+  border-radius: 5px;
+  text-align: center;
+  white-space: nowrap;
+}
+.flight-no-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--flight);
+  background: rgba(123,104,238,0.1);
+  border-radius: 5px;
+  padding: 0 5px;
+  margin-left: 5px;
+  vertical-align: middle;
+}
+
 .flight-card {
   background: linear-gradient(135deg, rgba(123,104,238,0.1), rgba(155,137,255,0.1));
   border: 1.5px solid rgba(123,104,238,0.32);
