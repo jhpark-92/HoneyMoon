@@ -117,43 +117,67 @@ function ensureHotelInDay(day) {
   }, ...others];
 }
 
+function applyParsed(p) {
+  const itin = p.itin || p;
+  for (let d = 1; d <= TOTAL_DAYS; d++) {
+    if (Array.isArray(itin[d])) state.itin[d] = itin[d];
+  }
+  if (p.flights) {
+    if (p.flights[5])  Object.assign(state.flights[5],  p.flights[5]);
+    if (p.flights[7])  Object.assign(state.flights[7],  p.flights[7]);
+    if (p.flights[11]) Object.assign(state.flights[11], p.flights[11]);
+  }
+}
+
 function loadState() {
   if (SHARED_DATA) {
-    const src = SHARED_DATA;
-    const itin = src.itin || src;
-    for (let d = 1; d <= TOTAL_DAYS; d++) {
-      if (Array.isArray(itin[d])) state.itin[d] = itin[d];
-    }
-    if (src.flights) {
-      if (src.flights[5])  Object.assign(state.flights[5],  src.flights[5]);
-      if (src.flights[7])  Object.assign(state.flights[7],  src.flights[7]);
-      if (src.flights[11]) Object.assign(state.flights[11], src.flights[11]);
-    }
+    applyParsed(SHARED_DATA);
   } else {
+    // 1순위: URL 해시 (기기 간 공유)
+    try {
+      const hash = location.hash.slice(1);
+      if (hash) {
+        const p = JSON.parse(decodeURIComponent(atob(hash)));
+        applyParsed(p);
+        // 해시 데이터를 localStorage에도 저장
+        localStorage.setItem('honeymoon-turkey-2025', JSON.stringify(p));
+        for (let d = 1; d <= TOTAL_DAYS; d++) ensureHotelInDay(d);
+        return;
+      }
+    } catch (_) {}
+    // 2순위: localStorage
     try {
       const s = localStorage.getItem('honeymoon-turkey-2025');
-      if (s) {
-        const p = JSON.parse(s);
-        const itin = p.itin || p;
-        for (let d = 1; d <= TOTAL_DAYS; d++) {
-          if (Array.isArray(itin[d])) state.itin[d] = itin[d];
-        }
-        if (p.flights) {
-          if (p.flights[5])  Object.assign(state.flights[5],  p.flights[5]);
-          if (p.flights[7])  Object.assign(state.flights[7],  p.flights[7]);
-          if (p.flights[11]) Object.assign(state.flights[11], p.flights[11]);
-        }
-      }
+      if (s) applyParsed(JSON.parse(s));
     } catch (_) {}
   }
   for (let d = 1; d <= TOTAL_DAYS; d++) ensureHotelInDay(d);
 }
 
 function saveState() {
-  localStorage.setItem('honeymoon-turkey-2025', JSON.stringify({
-    itin: state.itin,
-    flights: state.flights,
-  }));
+  const data = { itin: state.itin, flights: state.flights };
+  const json = JSON.stringify(data);
+  localStorage.setItem('honeymoon-turkey-2025', json);
+  // URL 해시에도 인코딩 → 이 URL을 모바일에서 열면 같은 데이터 로드
+  try {
+    history.replaceState(null, '', '#' + btoa(encodeURIComponent(json)));
+  } catch (_) {}
+}
+
+function copyShareURL() {
+  const btn = document.getElementById('shareBtn');
+  try {
+    const json = JSON.stringify({ itin: state.itin, flights: state.flights });
+    const hash = btoa(encodeURIComponent(json));
+    const url  = location.origin + location.pathname + '#' + hash;
+    navigator.clipboard.writeText(url).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = '✅ 복사됨!';
+      setTimeout(() => { btn.textContent = orig; }, 2000);
+    });
+  } catch (_) {
+    alert('URL 복사에 실패했어요. 주소창 URL을 직접 복사해주세요.');
+  }
 }
 
 async function exportHTML() {

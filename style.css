@@ -67,6 +67,12 @@ header {
   gap: 7px;
 }
 
+.hd-btns {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
 .export-btn {
   flex-shrink: 0;
   background: rgba(255,255,255,0.18);
@@ -809,13 +815,17 @@ header {
 
 /* ── MOBILE (≤ 768px) ── */
 @media (max-width: 768px) {
-  html, body { height: 100dvh; }
+  html, body {
+    height: 100dvh;
+    overflow: hidden;
+  }
 
   header {
     height: auto;
     min-height: 50px;
     padding: 8px 13px;
     gap: 8px;
+    flex-shrink: 0;
   }
 
   .hd-hotels { display: none; }
@@ -824,20 +834,29 @@ header {
   .hd-title p { font-size: 0.54rem; letter-spacing: 0.8px; }
   .export-btn { font-size: 0.65rem; padding: 5px 10px; }
 
-  .main { flex-direction: column; }
+  /* 사이드바+지도를 세로로 쌓되 각각 비율로 고정 */
+  .main {
+    flex-direction: column;
+    overflow: hidden;
+  }
 
   .sidebar {
     width: 100%;
     border-right: none;
     border-bottom: 1px solid var(--border);
+    /* 화면의 55%를 사이드바에 할당 */
+    flex: 0 0 55dvh;
+    overflow: hidden;
   }
 
   .itin-wrap { padding: 10px; }
 
+  /* 나머지 45%를 지도에 할당 */
   .map-wrap {
-    height: 320px;
-    flex-shrink: 0;
+    flex: 1 1 0;
+    min-height: 200px;
     width: 100%;
+    height: auto;
   }
 
   .map-btns { bottom: 10px; left: 8px; gap: 5px; }
