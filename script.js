@@ -797,6 +797,24 @@ function initSearch() {
   const clr   = document.getElementById('searchClear');
   const drop  = document.getElementById('searchDropdown');
 
+  // 카테고리 필터 칩 렌더링
+  const filterWrap = document.getElementById('searchFilters');
+  CATEGORY_FILTERS.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'search-filter-chip' + (cat.id === 'all' ? ' active' : '');
+    btn.textContent = cat.label;
+    btn.dataset.catId = cat.id;
+    btn.addEventListener('click', () => {
+      activeCategoryId = cat.id;
+      filterWrap.querySelectorAll('.search-filter-chip').forEach(b =>
+        b.classList.toggle('active', b.dataset.catId === cat.id)
+      );
+      const q = inp.value.trim();
+      if (q.length >= 2) doSearch(q);
+    });
+    filterWrap.appendChild(btn);
+  });
+
   inp.addEventListener('input', () => {
     const q = inp.value.trim();
     clr.classList.toggle('visible', q.length > 0);
@@ -861,11 +879,57 @@ function translateQuery(q) {
   return q;
 }
 
-async function photonFetch(q) {
-  const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=8&bbox=${TR_BBOX}`;
+// 카테고리 필터 정의
+const CATEGORY_FILTERS = [
+  { id: 'all',      label: '전체',      tag: null },
+  { id: 'sights',   label: '관광지',    tag: 'tourism' },
+  { id: 'food',     label: '식당·카페', tag: 'amenity:restaurant,amenity:cafe,amenity:fast_food,amenity:bar' },
+  { id: 'shopping', label: '쇼핑',      tag: 'shop' },
+  { id: 'nature',   label: '자연',      tag: 'natural' },
+];
+let activeCategoryId = 'all';
+
+async function photonFetch(q, categoryId = 'all') {
+  const cat = CATEGORY_FILTERS.find(c => c.id === categoryId);
+  let url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=10&bbox=${TR_BBOX}`;
+  if (cat?.tag) {
+    cat.tag.split(',').forEach(t => { url += `&osm_tag=${encodeURIComponent(t)}`; });
+  }
   const res = await fetch(url);
   if (!res.ok) throw new Error('fetch failed');
   return res.json();
+}
+
+// 카테고리 한국어 레이블
+function categoryLabel(key, value) {
+  const map = {
+    tourism:  { museum:'박물관', attraction:'관광지', hotel:'호텔', hostel:'호스텔',
+                gallery:'갤러리', viewpoint:'전망대', ruins:'유적', monument:'기념물',
+                theme_park:'테마파크', zoo:'동물원', artwork:'예술작품' },
+    amenity:  { restaurant:'식당', cafe:'카페', fast_food:'패스트푸드', bar:'바',
+                mosque:'모스크', place_of_worship:'종교시설',
+                market:'시장', marketplace:'시장',
+                hospital:'병원', pharmacy:'약국' },
+    historic: { ruins:'유적지', castle:'성', monument:'기념물',
+                archaeological_site:'고고학유적', fort:'요새' },
+    natural:  { beach:'해변', peak:'산봉우리', cave_entrance:'동굴',
+                hot_spring:'온천', waterfall:'폭포', cliff:'절벽' },
+    leisure:  { park:'공원', beach_resort:'리조트', water_park:'워터파크' },
+    shop:     { mall:'쇼핑몰', market:'시장', supermarket:'슈퍼마켓',
+                clothes:'의류', jewelry:'보석' },
+  };
+  return map[key]?.[value] || null;
+}
+
+// 카테고리별 뱃지 색상
+function categoryColor(key) {
+  const colors = {
+    tourism: '#1a6e8a', historic: '#1a6e8a',
+    amenity: '#e05a00',
+    natural: '#2e7d32', leisure: '#2e7d32',
+    shop: '#6a1b9a',
+  };
+  return colors[key] || '#8a7a72';
 }
 
 function matchedHotels(q) {
@@ -881,18 +945,19 @@ async function doSearch(q) {
   const drop = document.getElementById('searchDropdown');
   try {
     const translated = translateQuery(q);
-    const geojson = await photonFetch(translated);
+    const geojson = await photonFetch(translated, activeCategoryId);
     const features = geojson.features || [];
 
-    // 등록된 호텔과 이름이 매칭되면 결과 상단에 삽입
-    const hotelHits = matchedHotels(q);
-    hotelHits.forEach(h => {
-      features.unshift({
-        _isHotel: true,
-        properties: { name: h.name, city: h.city, country: '튀르키예', osm_key: 'tourism', osm_value: 'hotel' },
-        geometry: { coordinates: [h.lng, h.lat] },
+    // 등록된 호텔과 이름이 매칭되면 결과 상단에 삽입 (전체 필터일 때만)
+    if (activeCategoryId === 'all') {
+      const hotelHits = matchedHotels(q);
+      hotelHits.forEach(h => {
+        features.unshift({
+          properties: { name: h.name, city: h.city, country: '튀르키예', osm_key: 'tourism', osm_value: 'hotel' },
+          geometry: { coordinates: [h.lng, h.lat] },
+        });
       });
-    });
+    }
 
     if (!features.length) {
       drop.innerHTML = `<div class="sr-status">검색 결과가 없어요 😔<br><small>주요 관광지는 한국어도 가능해요<br>예: 그랜드 바자르, 아야소피아, Göreme</small></div>`;
@@ -905,6 +970,8 @@ async function doSearch(q) {
       const name = p.name || p.street || '';
       const addr = fmtAddr(p);
       const ico  = placeIcon(p.osm_key, p.osm_value);
+      const label = categoryLabel(p.osm_key, p.osm_value);
+      const color = categoryColor(p.osm_key);
       const [lng, lat] = feat.geometry.coordinates;
 
       const div = document.createElement('div');
@@ -912,7 +979,7 @@ async function doSearch(q) {
       div.innerHTML = `
         <span class="sr-icon">${ico}</span>
         <div class="sr-text">
-          <div class="sr-name">${esc(name)}</div>
+          <div class="sr-name">${esc(name)}${label ? `<span class="sr-badge" style="background:${color}">${label}</span>` : ''}</div>
           <div class="sr-addr">${esc(addr)}</div>
         </div>`;
 

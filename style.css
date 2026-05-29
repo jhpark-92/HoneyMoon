@@ -266,6 +266,49 @@ header {
   font-weight: 600;
 }
 
+.search-filters {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 7px;
+}
+
+.search-filter-chip {
+  border: 1.5px solid var(--border);
+  background: white;
+  border-radius: 20px;
+  padding: 3px 11px;
+  font-size: 0.68rem;
+  font-family: inherit;
+  font-weight: 600;
+  color: var(--text-mid);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.search-filter-chip:hover {
+  border-color: var(--primary-light);
+  color: var(--primary);
+}
+
+.search-filter-chip.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+.sr-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: white;
+  vertical-align: middle;
+}
+
 .search-row { position: relative; }
 
 .search-input {
