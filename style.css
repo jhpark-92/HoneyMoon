@@ -801,7 +801,7 @@ header {
 }
 .qr-btn:hover { background: rgba(255,255,255,0.32); }
 
-/* ── QR 모달 ── */
+/* ── 공통 모달 ── */
 .qr-modal {
   display: none;
   position: fixed;
@@ -848,19 +848,6 @@ header {
   line-height: 1.6;
   margin-bottom: 18px;
 }
-
-.qr-img-wrap {
-  width: 200px;
-  height: 200px;
-  margin: 0 auto;
-  border-radius: 10px;
-  overflow: hidden;
-  background: #f5f0e8;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.qr-img-wrap img { width: 200px; height: 200px; }
 
 /* ── SIDEBAR TOGGLE (모바일 전용) ── */
 .sidebar-toggle {

@@ -1386,27 +1386,6 @@ async function init() {
     syncStatus.style.color = 'var(--text-light)';
   });
 
-  // QR 모달
-  const qrBtn      = document.getElementById('qrBtn');
-  const qrModal    = document.getElementById('qrModal');
-  const qrModalClose = document.getElementById('qrModalClose');
-  const qrImg      = document.getElementById('qrImg');
-
-  qrBtn.addEventListener('click', () => {
-    const scriptUrl = getScriptUrl();
-    if (!scriptUrl) {
-      alert('먼저 ⚙️ 설정에서 Apps Script URL을 등록해주세요.');
-      return;
-    }
-    // QR = 앱 URL + script 파라미터 → 모바일에서 스캔하면 자동 등록
-    const shareUrl = `${location.origin + location.pathname}?script=${encodeURIComponent(scriptUrl)}`;
-    const api = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`;
-    qrImg.src = api;
-    qrModal.classList.add('open');
-  });
-
-  qrModalClose.addEventListener('click', () => qrModal.classList.remove('open'));
-  qrModal.addEventListener('click', e => { if (e.target === qrModal) qrModal.classList.remove('open'); });
 
   // 모바일 사이드바 접기/펼치기
   const toggleBtn = document.getElementById('sidebarToggle');
