@@ -1768,7 +1768,7 @@ async function init() {
 
   // 모바일 사이드바 드래그 리사이즈
   const handle  = document.getElementById('sidebarToggle');
-  const sidebar = handle?.closest('.sidebar');
+  const sidebar = document.querySelector('.sidebar');
   if (handle && sidebar) {
     let dragStartY = 0, dragStartH = 0;
     const MIN_H = 84;   // 탭만 보이는 최소 높이
