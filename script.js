@@ -469,7 +469,7 @@ function initMap() {
         font-size:11px;font-weight:800;white-space:nowrap;
         box-shadow:0 3px 10px rgba(0,0,0,0.32);border:2.5px solid white;
         display:flex;align-items:center;gap:4px;
-        font-family:'Maru Buri';
+        font-family:'Pretendard Variable',Pretendard,sans-serif;
       ">${h.emoji} ${h.city}</div>`,
       className: '',
       iconAnchor: [0, 14],
@@ -504,7 +504,7 @@ function initMap() {
           padding:3px 9px;border-radius:10px;
           font-size:10px;font-weight:700;white-space:nowrap;
           box-shadow:0 2px 7px rgba(0,0,0,0.22);
-          font-family:'Maru Buri';
+          font-family:'Pretendard Variable',Pretendard,sans-serif;
         ">✈️ ${fl.label}</div>`,
         className: '',
         iconAnchor: [50, 10],
@@ -561,7 +561,7 @@ function renderRoute(day) {
         display:flex;align-items:center;justify-content:center;
         font-size:12px;font-weight:800;
         box-shadow:0 2px 9px rgba(0,0,0,0.32);border:2.5px solid white;
-        font-family:'Maru Buri';
+        font-family:'Pretendard Variable',Pretendard,sans-serif;
       ">${num}</div>`,
       className: '',
       iconAnchor: [14, 14],
@@ -1766,13 +1766,29 @@ async function init() {
   });
 
 
-  // 모바일 사이드바 접기/펼치기
-  const toggleBtn = document.getElementById('sidebarToggle');
-  const sidebar   = toggleBtn?.closest('.sidebar');
-  if (toggleBtn && sidebar) {
-    toggleBtn.addEventListener('click', () => {
-      sidebar.classList.toggle('collapsed');
-      setTimeout(() => map.invalidateSize(), 380);
+  // 모바일 사이드바 드래그 리사이즈
+  const handle  = document.getElementById('sidebarToggle');
+  const sidebar = handle?.closest('.sidebar');
+  if (handle && sidebar) {
+    let dragStartY = 0, dragStartH = 0;
+    const MIN_H = 84;   // 탭만 보이는 최소 높이
+    const getMaxH = () => window.innerHeight * 0.80;
+
+    handle.addEventListener('touchstart', e => {
+      e.preventDefault();
+      dragStartY = e.touches[0].clientY;
+      dragStartH = sidebar.getBoundingClientRect().height;
+    }, { passive: false });
+
+    handle.addEventListener('touchmove', e => {
+      e.preventDefault();
+      const dy   = e.touches[0].clientY - dragStartY;
+      const newH = Math.min(Math.max(dragStartH + dy, MIN_H), getMaxH());
+      sidebar.style.height = newH + 'px';
+    }, { passive: false });
+
+    handle.addEventListener('touchend', () => {
+      map.invalidateSize();
     });
   }
 }

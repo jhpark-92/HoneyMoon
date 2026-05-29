@@ -18,7 +18,8 @@
 html, body { height: 100%; overflow: hidden; }
 
 body {
-  font-family: 'Maru Buri';
+  font-family: 'Pretendard Variable', Pretendard, sans-serif;
+  letter-spacing: -0.02em;
   background: var(--bg);
   color: var(--text);
   display: flex;
@@ -876,7 +877,7 @@ header {
 .leaflet-popup-content-wrapper {
   border-radius: 13px !important;
   box-shadow: 0 4px 18px rgba(0,0,0,0.16) !important;
-  font-family: 'Maru Buri' !important;
+  font-family: 'Pretendard Variable', Pretendard, sans-serif !important;
 }
 
 .leaflet-popup-content { margin: 12px 14px !important; }
@@ -1079,9 +1080,19 @@ header {
   color: var(--text-light);
 }
 
-/* ── SIDEBAR TOGGLE (모바일 전용) ── */
+/* ── SIDEBAR RESIZE HANDLE (모바일 전용) ── */
 .sidebar-toggle {
   display: none; /* 데스크탑에서는 숨김 */
+}
+
+/* 핸들 pill */
+.sidebar-toggle-icon {
+  display: block;
+  width: 36px;
+  height: 4px;
+  background: #bdb5ac;
+  border-radius: 2px;
+  pointer-events: none;
 }
 
 /* ── MOBILE (≤ 768px) ── */
@@ -1117,18 +1128,9 @@ header {
     border-bottom: 1px solid var(--border);
     flex-shrink: 0;
     overflow: hidden;
-    max-height: 50vh;
-    transition: max-height 0.35s ease;
+    height: 50vh;
+    min-height: 84px;
     position: relative;
-  }
-
-  /* 접힌 상태: 탭 영역만 노출 */
-  .sidebar.collapsed {
-    max-height: 110px;
-  }
-  .sidebar.collapsed .search-wrap,
-  .sidebar.collapsed .itin-wrap {
-    display: none;
   }
 
   .itin-wrap { padding: 10px; }
@@ -1136,34 +1138,29 @@ header {
   /* 지도: 나머지 공간 모두 차지 */
   .map-wrap {
     flex: 1 1 0;
-    min-height: 150px;
+    min-height: 120px;
     width: 100%;
     height: auto;
   }
 
-  /* 토글 버튼 */
+  /* 드래그 리사이즈 핸들 */
   .sidebar-toggle {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 100%;
-    height: 26px;
+    height: 22px;
     border: none;
-    background: #f0ebe3;
+    background: #ede8e0;
     border-top: 1px solid var(--border);
-    cursor: pointer;
+    cursor: row-resize;
+    touch-action: none;
     flex-shrink: 0;
+    user-select: none;
+    -webkit-user-select: none;
   }
 
-  .sidebar-toggle-icon {
-    font-size: 0.7rem;
-    color: var(--text-light);
-    transition: transform 0.25s;
-  }
-
-  .sidebar.collapsed .sidebar-toggle-icon {
-    transform: rotate(180deg);
-  }
+  .sidebar-toggle:active { background: #e4ddd4; }
 
   .map-btns { bottom: 10px; left: 8px; gap: 5px; }
   .map-btn { font-size: 0.66rem; padding: 6px 10px; }
