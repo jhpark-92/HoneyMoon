@@ -1133,13 +1133,18 @@ function renderItin() {
   html += `<div class="places-list" id="placesList">`;
   let placeNum = 0;
 
+  // 각 인덱스별 번호 미리 계산 (호텔 제외)
+  const numMap = {};
+  let n = 0;
+  places.forEach((pl, i) => { if (pl.type !== 'hotel') numMap[i] = ++n; });
+
   places.forEach((pl, i) => {
     const isHotel = pl.type === 'hotel';
     if (!isHotel) placeNum++;
     const prev = places[i - 1];
     const km   = prev ? dist(prev.lat, prev.lng, pl.lat, pl.lng) : 0;
     const fromLbl = prev
-      ? (prev.type === 'hotel' ? `${prev.emoji} 호텔에서` : `${placeNum - 1}번에서`)
+      ? (prev.type === 'hotel' ? `${prev.emoji} 호텔에서` : `${numMap[i - 1]}번에서`)
       : '';
     const badge = isHotel
       ? `<span style="font-size:1.1rem">${pl.emoji}</span>`
