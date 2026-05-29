@@ -129,28 +129,37 @@ function applyParsed(p) {
   }
 }
 
-function loadState() {
+async function loadState() {
   if (SHARED_DATA) {
     applyParsed(SHARED_DATA);
-  } else {
-    // 1순위: URL 해시 (기기 간 공유)
-    try {
-      const hash = location.hash.slice(1);
-      if (hash) {
-        const json = decodeData(hash);
-        const p = JSON.parse(json);
-        applyParsed(p);
-        localStorage.setItem('honeymoon-turkey-2025', json);
-        for (let d = 1; d <= TOTAL_DAYS; d++) ensureHotelInDay(d);
-        return;
-      }
-    } catch (_) {}
-    // 2순위: localStorage
-    try {
-      const s = localStorage.getItem('honeymoon-turkey-2025');
-      if (s) applyParsed(JSON.parse(s));
-    } catch (_) {}
+    for (let d = 1; d <= TOTAL_DAYS; d++) ensureHotelInDay(d);
+    return;
   }
+
+  // 1순위: URL 파라미터 ?blob=ID (QR 스캔 후 첫 접속)
+  const urlBlob = new URLSearchParams(location.search).get('blob');
+  if (urlBlob) {
+    setBlobId(urlBlob);
+    // URL에서 파라미터 제거
+    history.replaceState(null, '', location.pathname);
+  }
+
+  // 2순위: 클라우드 (blob ID가 있으면 자동 로드)
+  const cloud = await cloudLoad();
+  if (cloud) {
+    applyParsed(cloud);
+    for (let d = 1; d <= TOTAL_DAYS; d++) ensureHotelInDay(d);
+    // 로컬에도 캐시
+    localStorage.setItem('honeymoon-turkey-2025', JSON.stringify(cloud));
+    return;
+  }
+
+  // 3순위: localStorage (오프라인 폴백)
+  try {
+    const s = localStorage.getItem('honeymoon-turkey-2025');
+    if (s) applyParsed(JSON.parse(s));
+  } catch (_) {}
+
   for (let d = 1; d <= TOTAL_DAYS; d++) ensureHotelInDay(d);
 }
 
@@ -170,13 +179,56 @@ function decodeData(hash) {
   return decodeURIComponent(escape(atob(hash)));
 }
 
+// ════════════════════════════════════════
+//  CLOUD SYNC (JSONBlob)
+// ════════════════════════════════════════
+
+const BLOB_API = 'https://jsonblob.com/api/jsonBlob';
+const BLOB_KEY = 'honeymoon-blobid';
+
+function getBlobId() { return localStorage.getItem(BLOB_KEY); }
+function setBlobId(id) { localStorage.setItem(BLOB_KEY, id); }
+
+async function cloudSave(json) {
+  const id = getBlobId();
+  try {
+    if (id) {
+      await fetch(`${BLOB_API}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: json,
+      });
+    } else {
+      const res = await fetch(BLOB_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: json,
+      });
+      // Location 헤더에서 ID 추출 (CORS expose 필요)
+      const loc = res.headers.get('Location') || res.headers.get('location') || '';
+      let newId = loc.split('/').pop();
+      // fallback: X-Blob-Id 헤더
+      if (!newId) newId = res.headers.get('X-Blob-Id') || '';
+      if (newId) setBlobId(newId);
+    }
+  } catch (_) {}
+}
+
+async function cloudLoad() {
+  const id = getBlobId();
+  if (!id) return null;
+  try {
+    const res = await fetch(`${BLOB_API}/${id}`);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (_) { return null; }
+}
+
 function saveState() {
   const data = { itin: state.itin, flights: state.flights };
   const json = JSON.stringify(data);
   localStorage.setItem('honeymoon-turkey-2025', json);
-  try {
-    history.replaceState(null, '', '#' + encodeData(json));
-  } catch (_) {}
+  cloudSave(json); // 클라우드에 비동기 저장
 }
 
 function copyShareURL() {
@@ -1286,8 +1338,8 @@ function updateFlightCardDisplay(day) {
 //  INIT
 // ════════════════════════════════════════
 
-function init() {
-  loadState();
+async function init() {
+  await loadState();
   initMap();
   renderTabs();
   renderItin();
@@ -1304,11 +1356,19 @@ function init() {
   const qrModalClose = document.getElementById('qrModalClose');
   const qrImg      = document.getElementById('qrImg');
 
-  qrBtn.addEventListener('click', () => {
-    const url = location.href.split('#')[0] + '#' + encodeData(
-      JSON.stringify({ itin: state.itin, flights: state.flights })
-    );
-    const api = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
+  qrBtn.addEventListener('click', async () => {
+    // blob ID가 없으면 먼저 저장해서 생성
+    if (!getBlobId()) {
+      await cloudSave(JSON.stringify({ itin: state.itin, flights: state.flights }));
+    }
+    const id = getBlobId();
+    if (!id) {
+      alert('클라우드 저장에 실패했어요. 인터넷 연결을 확인해주세요.');
+      return;
+    }
+    const base = location.origin + location.pathname;
+    const shareUrl = `${base}?blob=${id}`;
+    const api = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`;
     qrImg.src = api;
     qrModal.classList.add('open');
   });
