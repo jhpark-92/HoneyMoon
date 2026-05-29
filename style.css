@@ -288,9 +288,14 @@ header {
 /* 일정 아이템 이름 행 */
 .place-name-row {
   display: flex;
-  align-items: center;
-  gap: 5px;
-  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 4px;
+  flex-wrap: nowrap;
+}
+
+.place-name-row .place-name {
+  flex: 1;
+  min-width: 0;
 }
 
 .place-cat-badge {
@@ -301,6 +306,8 @@ header {
   font-weight: 700;
   color: white;
   flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 2px;
 }
 
 .place-copy {
@@ -313,6 +320,8 @@ header {
   line-height: 1;
   transition: color 0.15s;
   flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 1px;
 }
 .place-copy:hover { color: var(--primary); }
 
