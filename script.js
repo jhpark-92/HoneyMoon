@@ -1106,8 +1106,13 @@ const KO_TRANSLATE = {
 
 function translateQuery(q) {
   const lower = q.trim().toLowerCase();
+  // 1순위: 쿼리가 키를 포함 (예: "그랜드 바자르" → "Kapalı Çarşı")
   for (const [ko, en] of Object.entries(KO_TRANSLATE)) {
     if (lower.includes(ko.toLowerCase())) return en;
+  }
+  // 2순위: 키가 쿼리로 시작 — 타이핑 중인 부분 입력 (예: "그랜드" → "Kapalı Çarşı")
+  for (const [ko, en] of Object.entries(KO_TRANSLATE)) {
+    if (lower.length >= 2 && ko.toLowerCase().startsWith(lower)) return en;
   }
   return q;
 }
@@ -1169,13 +1174,14 @@ async function doSearch(q) {
     // ── 구글 API 키가 있으면 Google Places 우선 ──
     if (getGoogleKey()) {
       // 한국어 → 영어/터키어 번역 후 검색 (Google은 영어 쿼리에 더 정확)
-      const gQuery    = translateQuery(q);
-      let   gPlaces   = await googlePlacesSearch(gQuery);
-      // 번역 쿼리 결과가 없으면 원문으로 재시도
+      const gQuery  = translateQuery(q);
+      let   gPlaces = await googlePlacesSearch(gQuery);
+      // 번역 쿼리 결과 없으면 원문으로 재시도
       if (gPlaces !== null && gPlaces.length === 0 && gQuery !== q) {
         gPlaces = await googlePlacesSearch(q) ?? [];
       }
-      if (gPlaces !== null) {
+      // 결과 있으면 표시, 없으면 Photon 폴백으로 계속 진행
+      if (gPlaces !== null && gPlaces.length > 0) {
         renderGoogleResults(drop, q, gPlaces);
         return;
       }
