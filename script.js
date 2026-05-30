@@ -3,7 +3,7 @@
 // ════════════════════════════════════════
 
 const TOTAL_DAYS = 11;
-const TRIP_START = new Date(2025, 6, 1); // July 1 2025
+const TRIP_START = new Date(2026, 6, 1); // July 1 2026
 
 const DAY_COLORS = [
   '#E57373','#FF8A65','#FFB74D','#FFCA28',
@@ -158,13 +158,13 @@ async function loadState() {
     applyParsed(cloud);
     for (let d = 1; d <= TOTAL_DAYS; d++) ensureHotelInDay(d);
     // 로컬에도 캐시
-    localStorage.setItem('honeymoon-turkey-2025', JSON.stringify(cloud));
+    localStorage.setItem('honeymoon-turkey-2026', JSON.stringify(cloud));
     return;
   }
 
   // 3순위: localStorage (오프라인 폴백)
   try {
-    const s = localStorage.getItem('honeymoon-turkey-2025');
+    const s = localStorage.getItem('honeymoon-turkey-2026');
     if (s) applyParsed(JSON.parse(s));
   } catch (_) {}
 
@@ -301,7 +301,7 @@ async function cloudLoad() {
 function saveState() {
   const data = { itin: state.itin, flights: state.flights };
   const json = JSON.stringify(data);
-  localStorage.setItem('honeymoon-turkey-2025', json);
+  localStorage.setItem('honeymoon-turkey-2026', json);
   cloudSave(json); // 클라우드에 비동기 저장
 }
 
@@ -347,7 +347,7 @@ async function exportHTML() {
     <div class="hd-logo">💑</div>
     <div class="hd-title">
       <h1>신혼여행 튀르키예 플래너</h1>
-      <p>ISTANBUL · CAPPADOCIA · ANTALYA &nbsp;·&nbsp; JULY 2025</p>
+      <p>ISTANBUL · CAPPADOCIA · ANTALYA &nbsp;·&nbsp; JULY 2026</p>
     </div>
   </div>
   <div class="hd-hotels">
