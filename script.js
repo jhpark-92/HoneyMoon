@@ -2020,7 +2020,7 @@ async function init() {
   if (handle && sidebar) {
     let active = false, startY = 0, startH = 0;
     const MIN_H  = 158; // 탭+검색창 항상 표시 보장
-    const getMaxH = () => window.innerHeight * 0.80;
+    const getMaxH = () => window.innerHeight - handle.offsetHeight;
 
     handle.addEventListener('pointerdown', e => {
       active  = true;

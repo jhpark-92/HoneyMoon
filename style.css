@@ -1312,7 +1312,7 @@ header {
   /* 지도: 나머지 공간 모두 차지 */
   .map-wrap {
     flex: 1 1 0;
-    min-height: 120px;
+    min-height: 0;
     width: 100%;
     height: auto;
   }
