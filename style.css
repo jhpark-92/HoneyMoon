@@ -421,7 +421,37 @@ header {
   color: var(--text-mid);
   letter-spacing: 0.3px;
   border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
+
+.sr-popular-sub {
+  font-size: 0.58rem;
+  font-weight: 500;
+  color: var(--text-light);
+  opacity: 0.85;
+}
+
+/* 구글 인기 장소 순위 번호 */
+.sr-rank {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: var(--text-mid);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.sr-item:nth-child(2) .sr-rank { background: #FFD700; border-color: #e0b800; color: #7a5800; }
+.sr-item:nth-child(3) .sr-rank { background: #d4d4d4; border-color: #aaa; color: #555; }
+.sr-item:nth-child(4) .sr-rank { background: #e8b06a; border-color: #c08040; color: #6a3a10; }
 
 .sr-section-label {
   padding: 7px 12px 4px;

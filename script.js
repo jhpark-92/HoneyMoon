@@ -975,15 +975,119 @@ function cityOfDay(day) {
   return 'antalya';
 }
 
-function showPopular() {
+// Google 인기 장소 캐시 (도시별 — 세션 동안 유지)
+const googlePopularCache = {};
+
+const GOOGLE_POPULAR_QUERIES = {
+  istanbul:   ['top tourist attractions Istanbul Turkey', 'best restaurants bars Istanbul Turkey'],
+  cappadocia: ['top places to visit Cappadocia Göreme Turkey', 'best activities tours Cappadocia'],
+  antalya:    ['top tourist attractions Antalya Turkey', 'best restaurants Antalya Turkey'],
+};
+
+async function showPopular() {
   const drop     = document.getElementById('searchDropdown');
   const city     = cityOfDay(state.day);
-  const list     = POPULAR[city] || [];
   const cityName = { istanbul: '이스탄불', cappadocia: '카파도키아', antalya: '안탈리아' }[city];
 
+  if (getGoogleKey()) {
+    await showGooglePopular(drop, city, cityName);
+  } else {
+    showStaticPopular(drop, city, cityName);
+  }
+}
+
+async function showGooglePopular(drop, city, cityName) {
+  // 캐시 있으면 즉시 표시
+  if (googlePopularCache[city]) {
+    renderPopularWithRatings(drop, googlePopularCache[city], cityName);
+    return;
+  }
+
+  drop.innerHTML = `<div class="sr-popular-header">⭐ ${cityName} 인기 장소 불러오는 중...</div>`;
+  drop.classList.add('open');
+
+  try {
+    const queries = GOOGLE_POPULAR_QUERIES[city] || [];
+    const results = await Promise.all(queries.map(q => googlePlacesSearch(q)));
+
+    // 합치기 + 중복 제거 (이름 기준)
+    const seen = new Set();
+    const all  = results.flat().filter(p => {
+      if (!p) return false;
+      const name = p.displayName?.text;
+      if (!name || seen.has(name)) return false;
+      seen.add(name);
+      return true;
+    });
+
+    // 별점 × log(리뷰수) 점수 기준 내림차순 정렬
+    all.sort((a, b) => {
+      const sA = (a.rating || 0) * Math.log1p(a.userRatingCount || 0);
+      const sB = (b.rating || 0) * Math.log1p(b.userRatingCount || 0);
+      return sB - sA;
+    });
+
+    googlePopularCache[city] = all;
+    renderPopularWithRatings(drop, all, cityName);
+  } catch (_) {
+    showStaticPopular(drop, city, cityName); // 실패 시 정적 목록 표시
+  }
+}
+
+function renderPopularWithRatings(drop, places, cityName) {
+  drop.innerHTML = `
+    <div class="sr-popular-header">
+      ⭐ ${cityName} 인기 장소
+      <span class="sr-popular-sub">Google 리뷰 점수순</span>
+    </div>`;
+
+  if (!places.length) {
+    drop.innerHTML += `<div class="sr-status">장소 정보를 불러올 수 없어요</div>`;
+    drop.classList.add('open');
+    return;
+  }
+
+  places.forEach((pl, idx) => {
+    const name    = pl.displayName?.text || '';
+    const addr    = pl.formattedAddress  || '';
+    const lat     = pl.location?.latitude;
+    const lng     = pl.location?.longitude;
+    const rating  = pl.rating;
+    const reviews = pl.userRatingCount;
+    const types   = pl.types || [];
+    const cat     = googleTypeToKo(types);
+    const color   = CAT_COLOR[cat] || '#8a7a72';
+    const icon    = CAT_ICON[cat]  || '📍';
+
+    const ratingHtml = rating
+      ? `<span class="sr-rating">⭐ ${rating.toFixed(1)}<span class="sr-review-count"> (${(reviews || 0).toLocaleString()})</span></span>`
+      : '';
+
+    const div = document.createElement('div');
+    div.className = 'sr-item';
+    div.innerHTML = `
+      <div class="sr-rank">${idx + 1}</div>
+      <div class="sr-text">
+        <div class="sr-name">${esc(name)}</div>
+        <div class="sr-meta">
+          ${cat ? `<span class="sr-badge" style="background:${color}">${icon} ${cat}</span>` : ''}
+          ${ratingHtml}
+        </div>
+        ${addr ? `<div class="sr-addr">${esc(addr)}</div>` : ''}
+      </div>`;
+    div.addEventListener('click', () =>
+      addPlace({ name, lat, lng, addr, osmKey: '_google', osmValue: cat || '' })
+    );
+    drop.appendChild(div);
+  });
+
+  drop.classList.add('open');
+}
+
+function showStaticPopular(drop, city, cityName) {
+  const list = POPULAR[city] || [];
   drop.innerHTML = `<div class="sr-popular-header">✨ ${cityName} 추천 장소</div>`;
 
-  // 카테고리별로 그루핑해서 표시
   const groups = {};
   list.forEach(pl => {
     if (!groups[pl.cat]) groups[pl.cat] = [];
@@ -994,7 +1098,6 @@ function showPopular() {
     const color = CAT_COLOR[cat] || '#8a7a72';
     const icon  = CAT_ICON[cat]  || '📍';
 
-    // 카테고리 소제목
     const sec = document.createElement('div');
     sec.className = 'sr-section-label';
     sec.innerHTML = `<span class="sr-badge" style="background:${color}">${icon} ${cat}</span>`;
