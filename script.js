@@ -1627,10 +1627,13 @@ function renderItin() {
             <span class="place-name">${esc(pl.name)}</span>
             ${catLabel ? `<span class="place-cat-badge" style="background:${catColor}">${catLabel}</span>` : ''}
             ${!isHotel ? `<button class="place-copy" data-name="${esc(pl.name)}" title="이름 복사">⎘</button>` : ''}
+            <button class="place-memo-btn${pl.memo ? ' has-memo' : ''}" data-id="${pl.id}" data-day="${day}" title="메모">📝</button>
           </div>
           ${isHotel && subLabel ? `<div class="place-addr">${subLabel}</div>` :
             pl.addr ? `<div class="place-addr">${esc(pl.addr)}</div>` : ''}
           ${prev ? `<div class="place-dist">📍 ${fromLbl} ${km.toFixed(1)}km</div>` : ''}
+          ${pl.memo ? `<div class="place-memo-text">${esc(pl.memo)}</div>` : ''}
+          <textarea class="place-memo-input" data-id="${pl.id}" data-day="${day}" placeholder="메모를 입력하세요..." maxlength="200">${esc(pl.memo || '')}</textarea>
         </div>
         ${isHotel ? '' : `<button class="place-del" data-id="${pl.id}" data-day="${day}">✕</button>`}
       </div>`;
@@ -1675,6 +1678,42 @@ function renderItin() {
       e.stopPropagation();
       removePlace(btn.dataset.id, parseInt(btn.dataset.day));
     });
+  });
+
+  wrap.querySelectorAll('.place-memo-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const item = btn.closest('.place-item');
+      const ta   = item.querySelector('.place-memo-input');
+      const mt   = item.querySelector('.place-memo-text');
+      const open = ta.classList.toggle('open');
+      if (open) {
+        ta.focus();
+        ta.selectionStart = ta.selectionEnd = ta.value.length;
+        if (mt) mt.style.display = 'none';
+      } else {
+        if (mt) mt.style.display = '';
+      }
+    });
+  });
+
+  wrap.querySelectorAll('.place-memo-input').forEach(ta => {
+    const saveMemo = () => {
+      const day = parseInt(ta.dataset.day);
+      const id  = ta.dataset.id;
+      const pl  = state.itin[day]?.find(p => p.id === id);
+      if (!pl) return;
+      pl.memo = ta.value.trim();
+      saveState();
+      const btn = ta.closest('.place-item')?.querySelector('.place-memo-btn');
+      const mt  = ta.closest('.place-item')?.querySelector('.place-memo-text');
+      if (btn) btn.classList.toggle('has-memo', !!pl.memo);
+      if (mt) { mt.textContent = pl.memo; mt.style.display = pl.memo ? '' : 'none'; }
+    };
+    ta.addEventListener('blur',  () => { saveMemo(); ta.classList.remove('open'); const mt = ta.closest('.place-item')?.querySelector('.place-memo-text'); if (mt) mt.style.display = ''; });
+    ta.addEventListener('input', saveMemo);
+    ta.addEventListener('click', e => e.stopPropagation());
+    ta.addEventListener('keydown', e => { if (e.key === 'Escape') { ta.blur(); } });
   });
 
   wrap.querySelectorAll('.place-item').forEach(el => {

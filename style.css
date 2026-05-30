@@ -707,6 +707,60 @@ header {
   box-shadow: 0 0 0 2px rgba(123,104,238,0.12);
 }
 
+/* ── 메모 버튼 ── */
+.place-memo-btn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0 2px;
+  line-height: 1;
+  transition: filter 0.15s, opacity 0.15s;
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 1px;
+  filter: grayscale(1);
+  opacity: 0.4;
+}
+.place-memo-btn:hover,
+.place-memo-btn.has-memo {
+  filter: grayscale(0);
+  opacity: 1;
+}
+
+.place-memo-text {
+  font-size: 0.68rem;
+  color: var(--text-mid);
+  background: rgba(26,110,138,0.06);
+  border-left: 2.5px solid var(--primary-light);
+  border-radius: 0 5px 5px 0;
+  padding: 3px 7px;
+  margin-top: 4px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.place-memo-input {
+  display: none;
+  width: 100%;
+  margin-top: 5px;
+  padding: 6px 8px;
+  border: 1.5px solid var(--primary-light);
+  border-radius: 7px;
+  font-size: 0.75rem;
+  font-family: inherit;
+  color: var(--text);
+  background: white;
+  resize: none;
+  outline: none;
+  line-height: 1.5;
+  min-height: 56px;
+  box-shadow: 0 0 0 3px rgba(26,110,138,0.08);
+}
+.place-memo-input.open { display: block; }
+.place-memo-input:focus { border-color: var(--primary); }
+
 /* Place list */
 .places-list {
   display: flex;
