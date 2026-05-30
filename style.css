@@ -1110,10 +1110,66 @@ header {
   color: var(--text-light);
 }
 
-/* ── 모바일 검색 전체화면 모드 ── */
-.search-back-btn {
-  display: none; /* 데스크탑 숨김 */
+/* ── 모바일 검색 모달 ── */
+.mobile-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--bg-white);
+  z-index: 99999;
+  flex-direction: column;
 }
+.mobile-modal.open { display: flex; }
+
+.mm-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-white);
+  flex-shrink: 0;
+}
+.mm-back {
+  border: none; background: none;
+  font-size: 1.3rem; color: var(--primary);
+  cursor: pointer; padding: 4px 8px; flex-shrink: 0;
+}
+.mm-input {
+  flex: 1;
+  padding: 9px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 16px;
+  font-family: inherit;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+}
+.mm-input:focus { border-color: var(--primary); background: white; }
+.mm-clear {
+  border: none; background: none;
+  color: var(--text-light); font-size: 0.9rem;
+  cursor: pointer; padding: 4px; display: none;
+}
+.mm-clear.visible { display: block; }
+.mm-day-tag {
+  padding: 6px 16px;
+  font-size: 0.65rem; font-weight: 600;
+  color: var(--text-light);
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.mm-results {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--bg-white);
+}
+
+/* 데스크탑에서 숨김 */
+.search-back-btn { display: none; }
 
 /* ── SIDEBAR RESIZE HANDLE (모바일 전용) ── */
 .sidebar-toggle {

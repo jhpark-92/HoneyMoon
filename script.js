@@ -638,6 +638,8 @@ function addPlace(data) {
   renderItin();
   renderRoute(day);
   closeDropdown();
+  // 모바일 모달에서 추가한 경우 모달 닫기
+  if (window._closeMobileModal) window._closeMobileModal();
   document.getElementById('searchInput').value = '';
   document.getElementById('searchClear').classList.remove('visible');
 }
@@ -984,8 +986,8 @@ const GOOGLE_POPULAR_QUERIES = {
   antalya:    ['top tourist attractions Antalya Turkey', 'best restaurants Antalya Turkey'],
 };
 
-async function showPopular() {
-  const drop     = document.getElementById('searchDropdown');
+async function showPopular(container) {
+  const drop     = container || document.getElementById('searchDropdown');
   const city     = cityOfDay(state.day);
   const cityName = { istanbul: '이스탄불', cappadocia: '카파도키아', antalya: '안탈리아' }[city];
 
@@ -1123,25 +1125,30 @@ function showStaticPopular(drop, city, cityName) {
 }
 
 function initSearch() {
-  const inp   = document.getElementById('searchInput');
-  const clr   = document.getElementById('searchClear');
-  const drop  = document.getElementById('searchDropdown');
+  // ── 데스크탑 사이드바 검색 ──
+  const inp  = document.getElementById('searchInput');
+  const clr  = document.getElementById('searchClear');
+  const drop = document.getElementById('searchDropdown');
 
-  // 입력창 포커스 시 인기 장소 표시 (빈 상태일 때)
   inp.addEventListener('focus', () => {
+    if (window.innerWidth <= 768) {
+      // 모바일: 사이드바 입력창 탭 → 모달 열기
+      inp.blur();
+      openMobileModal();
+      return;
+    }
     if (!inp.value.trim()) showPopular();
   });
 
   inp.addEventListener('input', () => {
+    if (window.innerWidth <= 768) return; // 모바일은 모달에서 처리
     const q = inp.value.trim();
     clr.classList.toggle('visible', q.length > 0);
     clearTimeout(searchTid);
-    if (!q) { showPopular(); return; }  // 입력 지우면 다시 인기 장소
+    if (!q) { showPopular(); return; }
     if (q.length < 2) { closeDropdown(); return; }
-
     drop.innerHTML = '<div class="sr-status">🔍 검색 중...</div>';
     drop.classList.add('open');
-
     searchTid = setTimeout(() => doSearch(q), 500);
   });
 
@@ -1156,25 +1163,50 @@ function initSearch() {
     if (!e.target.closest('#searchWrap') && !e.target.closest('#searchDropdown')) closeDropdown();
   });
 
-  // 모바일: 검색창 포커스 → 전체화면 모드
-  const searchWrap   = document.getElementById('searchWrap');
-  const searchBackBtn = document.getElementById('searchBackBtn');
+  // ── 모바일 전용 검색 모달 ──
+  const modal    = document.getElementById('mobileModal');
+  const mmInput  = document.getElementById('mmInput');
+  const mmClear  = document.getElementById('mmClear');
+  const mmBack   = document.getElementById('mmBack');
+  const mmResults = document.getElementById('mmResults');
+  const mmDayTag  = document.getElementById('mmDayTag');
 
-  function openSearchFullscreen() {
-    if (window.innerWidth > 768) return;
-    searchWrap.classList.add('search-fullscreen');
-    document.body.style.overflow = 'hidden';
+  function openMobileModal() {
+    mmDayTag.textContent = document.getElementById('searchDayTag').textContent;
+    modal.classList.add('open');
+    showPopular(mmResults);
+    setTimeout(() => mmInput.focus(), 80);
   }
 
-  function closeSearchFullscreen() {
-    searchWrap.classList.remove('search-fullscreen');
-    document.body.style.overflow = '';
-    closeDropdown();
-    inp.blur();
+  function closeMobileModal() {
+    modal.classList.remove('open');
+    mmInput.value = '';
+    mmClear.classList.remove('visible');
+    mmResults.innerHTML = '';
   }
 
-  inp.addEventListener('focus', openSearchFullscreen);
-  if (searchBackBtn) searchBackBtn.addEventListener('click', closeSearchFullscreen);
+  mmBack.addEventListener('click', closeMobileModal);
+
+  mmClear.addEventListener('click', () => {
+    mmInput.value = '';
+    mmClear.classList.remove('visible');
+    showPopular(mmResults);
+    mmInput.focus();
+  });
+
+  let mmTid = null;
+  mmInput.addEventListener('input', () => {
+    const q = mmInput.value.trim();
+    mmClear.classList.toggle('visible', q.length > 0);
+    clearTimeout(mmTid);
+    if (!q) { showPopular(mmResults); return; }
+    if (q.length < 2) { mmResults.innerHTML = ''; return; }
+    mmResults.innerHTML = '<div class="sr-status">🔍 검색 중...</div>';
+    mmTid = setTimeout(() => doSearch(q, mmResults), 500);
+  });
+
+  // 장소 추가 시 모달 닫기
+  window._closeMobileModal = closeMobileModal;
 }
 
 function closeDropdown() {
@@ -1283,10 +1315,10 @@ function matchedHotels(q) {
   );
 }
 
-async function doSearch(q) {
-  const drop = document.getElementById('searchDropdown');
+async function doSearch(q, container) {
+  const drop = container || document.getElementById('searchDropdown');
   drop.innerHTML = '<div class="sr-status">🔍 검색 중...</div>';
-  drop.classList.add('open');
+  if (!container) drop.classList.add('open');
 
   try {
     // ── 구글 API 키가 있으면 Google Places 우선 ──

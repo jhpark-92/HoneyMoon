@@ -132,6 +132,19 @@
 </div>
 
 
+<!-- 모바일 전용 검색 모달 (DOM 최상단 독립 요소) -->
+<div id="mobileModal" class="mobile-modal">
+  <div class="mm-header">
+    <button class="mm-back" id="mmBack">←</button>
+    <input class="mm-input" id="mmInput" type="text"
+           placeholder="예: 아야소피아, 그랜드 바자르..."
+           autocomplete="off" spellcheck="false" />
+    <button class="mm-clear" id="mmClear">✕</button>
+  </div>
+  <div class="mm-day-tag" id="mmDayTag">Day 1에 추가</div>
+  <div class="mm-results" id="mmResults"></div>
+</div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="script.js"></script>
 </body>
