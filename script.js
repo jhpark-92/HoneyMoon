@@ -1495,7 +1495,6 @@ function renderTabs() {
     const btn = document.createElement('button');
     btn.className = `day-tab${active ? ' active' : ''}`;
     btn.innerHTML = `
-      ${count > 0 ? `<span class="tab-count" style="background:${active ? 'rgba(255,255,255,0.35)' : color}">${count}</span>` : ''}
       <span class="tab-num" style="color:${active ? 'white' : color}">Day ${day}</span>
       <span class="tab-date">${fmtDay(day)}</span>
       ${isFlight ? '<span class="tab-badge">✈️</span>' : ''}
@@ -1632,7 +1631,7 @@ function renderItin() {
           ${isHotel && subLabel ? `<div class="place-addr">${subLabel}</div>` :
             pl.addr ? `<div class="place-addr">${esc(pl.addr)}</div>` : ''}
           ${prev ? `<div class="place-dist">📍 ${fromLbl} ${km.toFixed(1)}km</div>` : ''}
-          ${pl.memo ? `<div class="place-memo-text">${esc(pl.memo)}</div>` : ''}
+          <div class="place-memo-text"${pl.memo ? '' : ' style="display:none"'}>${esc(pl.memo || '')}</div>
           <textarea class="place-memo-input" data-id="${pl.id}" data-day="${day}" placeholder="메모를 입력하세요..." maxlength="200">${esc(pl.memo || '')}</textarea>
         </div>
         ${isHotel ? '' : `<button class="place-del" data-id="${pl.id}" data-day="${day}">✕</button>`}
@@ -1705,12 +1704,19 @@ function renderItin() {
       if (!pl) return;
       pl.memo = ta.value.trim();
       saveState();
-      const btn = ta.closest('.place-item')?.querySelector('.place-memo-btn');
-      const mt  = ta.closest('.place-item')?.querySelector('.place-memo-text');
+      const item = ta.closest('.place-item');
+      const btn  = item?.querySelector('.place-memo-btn');
+      const mt   = item?.querySelector('.place-memo-text');
       if (btn) btn.classList.toggle('has-memo', !!pl.memo);
       if (mt) { mt.textContent = pl.memo; mt.style.display = pl.memo ? '' : 'none'; }
     };
-    ta.addEventListener('blur',  () => { saveMemo(); ta.classList.remove('open'); const mt = ta.closest('.place-item')?.querySelector('.place-memo-text'); if (mt) mt.style.display = ''; });
+    ta.addEventListener('blur', () => {
+      saveMemo();
+      ta.classList.remove('open');
+      const mt = ta.closest('.place-item')?.querySelector('.place-memo-text');
+      const pl = state.itin[parseInt(ta.dataset.day)]?.find(p => p.id === ta.dataset.id);
+      if (mt) mt.style.display = pl?.memo ? '' : 'none';
+    });
     ta.addEventListener('input', saveMemo);
     ta.addEventListener('click', e => e.stopPropagation());
     ta.addEventListener('keydown', e => { if (e.key === 'Escape') { ta.blur(); } });
