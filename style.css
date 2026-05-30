@@ -1110,6 +1110,18 @@ header {
   color: var(--text-light);
 }
 
+/* ── 모바일 검색 오버레이 백드롭 ── */
+.search-overlay-bg {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 9490;
+  animation: fadeInBg 0.18s ease;
+}
+.search-overlay-bg.on { display: block; }
+@keyframes fadeInBg { from { opacity: 0; } to { opacity: 1; } }
+
 /* ── SIDEBAR RESIZE HANDLE (모바일 전용) ── */
 .sidebar-toggle {
   display: none; /* 데스크탑에서는 숨김 */

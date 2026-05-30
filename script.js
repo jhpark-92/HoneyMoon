@@ -1156,29 +1156,38 @@ function initSearch() {
     if (!e.target.closest('#searchWrap') && !e.target.closest('#searchDropdown')) closeDropdown();
   });
 
-  // 모바일: 드롭다운 열릴 때 position:fixed로 전환 (sidebar overflow:hidden 탈출)
+  // 모바일: 드롭다운 열릴 때 오버레이로 표시
+  const searchOverlayBg = document.getElementById('searchOverlayBg');
   new MutationObserver(() => {
     if (drop.classList.contains('open') && window.innerWidth <= 768) {
       const rect = document.getElementById('searchWrap').getBoundingClientRect();
+      const top  = Math.round(rect.bottom) + 6;
       Object.assign(drop.style, {
         position:     'fixed',
-        top:          Math.round(rect.bottom) + 'px',
-        left:         '0',
-        right:        '0',
-        maxHeight:    (window.innerHeight - rect.bottom - 8) + 'px',
+        top:          top + 'px',
+        left:         '10px',
+        right:        '10px',
+        maxHeight:    (window.innerHeight - top - 12) + 'px',
         zIndex:       '9500',
-        borderRadius: '0 0 14px 14px',
-        borderTop:    '1px solid #e0d5cc',
+        borderRadius: '14px',
+        boxShadow:    '0 8px 32px rgba(0,0,0,0.28)',
+        border:       '1px solid #e0d5cc',
       });
+      if (searchOverlayBg) searchOverlayBg.classList.add('on');
     }
   }).observe(drop, { attributes: true, attributeFilter: ['class'] });
+
+  // 백드롭 탭 → 검색 닫기
+  if (searchOverlayBg) searchOverlayBg.addEventListener('click', closeDropdown);
 }
 
 function closeDropdown() {
-  const d = document.getElementById('searchDropdown');
+  const d  = document.getElementById('searchDropdown');
+  const bg = document.getElementById('searchOverlayBg');
   d.classList.remove('open');
-  d.innerHTML = '';
-  d.style.cssText = ''; // 모바일 fixed 포지셔닝 인라인 스타일 초기화
+  d.innerHTML   = '';
+  d.style.cssText = '';
+  if (bg) bg.classList.remove('on');
 }
 
 // Photon bbox: west,south,east,north (Turkey)
