@@ -259,11 +259,10 @@ async function googlePlacesSearch(q) {
   };
 
   try {
-    const res = await fetch(PLACES_API, {
+    const res = await fetch(`${PLACES_API}?key=${encodeURIComponent(key)}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Goog-Api-Key': key,
         'X-Goog-FieldMask': PLACE_FIELD_MASK,
       },
       body: JSON.stringify(body),
@@ -1715,14 +1714,34 @@ async function init() {
     setGoogleKey(key);
     googleKeyStatus.textContent = '🔄 키 확인 중...';
     googleKeyStatus.style.color = 'var(--text-light)';
-    // 간단 테스트 검색
-    const test = await googlePlacesSearch('Hagia Sophia');
-    if (test && test.length > 0) {
-      googleKeyStatus.textContent = '✅ 연결 성공! 이제 별점·리뷰 검색이 가능해요';
-      googleKeyStatus.style.color = '#26a69a';
-    } else {
-      googleKeyStatus.textContent = '⚠️ 키는 저장됐으나 테스트 실패 — 도메인 제한 확인 필요';
-      googleKeyStatus.style.color = '#e07000';
+    // 테스트 검색 — 실제 에러 메시지 표시
+    try {
+      const testRes = await fetch(
+        `https://places.googleapis.com/v1/places:searchText?key=${encodeURIComponent(key)}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Goog-FieldMask': 'places.displayName' },
+          body: JSON.stringify({ textQuery: 'Hagia Sophia Istanbul', languageCode: 'ko', maxResultCount: 1 }),
+        }
+      );
+      if (testRes.ok) {
+        const data = await testRes.json();
+        if (data.places?.length > 0) {
+          googleKeyStatus.textContent = '✅ 연결 성공! 이제 별점·리뷰 검색이 가능해요';
+          googleKeyStatus.style.color = '#26a69a';
+        } else {
+          googleKeyStatus.textContent = '✅ API 연결됨 (검색 결과 없음 — 정상 작동)';
+          googleKeyStatus.style.color = '#26a69a';
+        }
+      } else {
+        const errData = await testRes.json().catch(() => ({}));
+        const errMsg = errData?.error?.message || `HTTP ${testRes.status}`;
+        googleKeyStatus.textContent = `⚠️ API 오류: ${errMsg}`;
+        googleKeyStatus.style.color = '#e05555';
+      }
+    } catch (e) {
+      googleKeyStatus.textContent = `⚠️ 네트워크/CORS 오류: ${e.message}`;
+      googleKeyStatus.style.color = '#e05555';
     }
   });
 
