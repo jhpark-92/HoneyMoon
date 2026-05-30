@@ -305,8 +305,7 @@ function saveState() {
   cloudSave(json); // 클라우드에 비동기 저장
 }
 
-function copyShareURL() {
-  const btn = document.getElementById('shareBtn');
+function copyShareURL(btn) {
   try {
     const json = JSON.stringify({ itin: state.itin, flights: state.flights });
     const hash = btoa(encodeURIComponent(json));
@@ -1496,6 +1495,7 @@ function renderTabs() {
     const btn = document.createElement('button');
     btn.className = `day-tab${active ? ' active' : ''}`;
     btn.innerHTML = `
+      ${count > 0 ? `<span class="tab-count" style="background:${active ? 'rgba(255,255,255,0.35)' : color}">${count}</span>` : ''}
       <span class="tab-num" style="color:${active ? 'white' : color}">Day ${day}</span>
       <span class="tab-date">${fmtDay(day)}</span>
       ${isFlight ? '<span class="tab-badge">✈️</span>' : ''}
@@ -1686,7 +1686,7 @@ function renderItin() {
 }
 
 // ════════════════════════════════════════
-//  FLIGHT EDIT
+//  FLIGHT EDIT (legacy — kept for exportHTML compatibility)
 // ════════════════════════════════════════
 
 function toggleFlightEdit(day) {
@@ -1861,6 +1861,7 @@ async function init() {
 
   document.getElementById('overviewBtn').addEventListener('click', showOverview);
   document.getElementById('fitDayBtn').addEventListener('click', () => renderRoute(state.day));
+  document.getElementById('exportBtn').addEventListener('click', exportHTML);
 
   // 설정 모달
   const settingsBtn    = document.getElementById('settingsBtn');
