@@ -1153,14 +1153,32 @@ function initSearch() {
   });
 
   document.addEventListener('click', e => {
-    if (!e.target.closest('#searchWrap')) closeDropdown();
+    if (!e.target.closest('#searchWrap') && !e.target.closest('#searchDropdown')) closeDropdown();
   });
+
+  // 모바일: 드롭다운 열릴 때 position:fixed로 전환 (sidebar overflow:hidden 탈출)
+  new MutationObserver(() => {
+    if (drop.classList.contains('open') && window.innerWidth <= 768) {
+      const rect = document.getElementById('searchWrap').getBoundingClientRect();
+      Object.assign(drop.style, {
+        position:     'fixed',
+        top:          Math.round(rect.bottom) + 'px',
+        left:         '0',
+        right:        '0',
+        maxHeight:    (window.innerHeight - rect.bottom - 8) + 'px',
+        zIndex:       '9500',
+        borderRadius: '0 0 14px 14px',
+        borderTop:    '1px solid #e0d5cc',
+      });
+    }
+  }).observe(drop, { attributes: true, attributeFilter: ['class'] });
 }
 
 function closeDropdown() {
   const d = document.getElementById('searchDropdown');
   d.classList.remove('open');
   d.innerHTML = '';
+  d.style.cssText = ''; // 모바일 fixed 포지셔닝 인라인 스타일 초기화
 }
 
 // Photon bbox: west,south,east,north (Turkey)
