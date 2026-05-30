@@ -1162,7 +1162,7 @@ header {
     flex-shrink: 0;
     overflow: hidden;
     height: 50vh;
-    min-height: 84px;
+    min-height: 158px; /* 탭(~74px) + 검색창(~80px) 항상 보이도록 */
     position: relative;
   }
 

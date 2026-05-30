@@ -1944,7 +1944,7 @@ async function init() {
   const sidebar = document.querySelector('.sidebar');
   if (handle && sidebar) {
     let active = false, startY = 0, startH = 0;
-    const MIN_H  = 84;
+    const MIN_H  = 158; // 탭+검색창 항상 표시 보장
     const getMaxH = () => window.innerHeight * 0.80;
 
     handle.addEventListener('pointerdown', e => {
