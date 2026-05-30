@@ -1110,17 +1110,10 @@ header {
   color: var(--text-light);
 }
 
-/* ── 모바일 검색 오버레이 백드롭 ── */
-.search-overlay-bg {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
-  z-index: 9490;
-  animation: fadeInBg 0.18s ease;
+/* ── 모바일 검색 전체화면 모드 ── */
+.search-back-btn {
+  display: none; /* 데스크탑 숨김 */
 }
-.search-overlay-bg.on { display: block; }
-@keyframes fadeInBg { from { opacity: 0; } to { opacity: 1; } }
 
 /* ── SIDEBAR RESIZE HANDLE (모바일 전용) ── */
 .sidebar-toggle {
@@ -1209,6 +1202,51 @@ header {
   }
 
   .sidebar-toggle:active { background: #ddd6cc; }
+
+  /* ── 모바일 검색 전체화면 모드 ── */
+  .search-back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: none;
+    font-size: 1.1rem;
+    color: var(--primary);
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 0;
+  }
+
+  /* 검색 전체화면 활성 상태 */
+  .search-wrap.search-fullscreen {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 9999 !important;
+    background: var(--bg-white) !important;
+    padding: 12px 12px 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    max-height: none !important;
+    border-bottom: none !important;
+  }
+
+  .search-wrap.search-fullscreen .search-dropdown {
+    position: static !important;
+    display: block !important;
+    flex: 1 !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    margin-top: 6px !important;
+  }
+
+  .search-wrap.search-fullscreen .search-dropdown.open {
+    display: block !important;
+  }
 
   .map-btns { bottom: 10px; left: 8px; gap: 5px; }
   .map-btn { font-size: 0.66rem; padding: 6px 10px; }

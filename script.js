@@ -1156,38 +1156,32 @@ function initSearch() {
     if (!e.target.closest('#searchWrap') && !e.target.closest('#searchDropdown')) closeDropdown();
   });
 
-  // 모바일: 드롭다운 열릴 때 오버레이로 표시
-  const searchOverlayBg = document.getElementById('searchOverlayBg');
-  new MutationObserver(() => {
-    if (drop.classList.contains('open') && window.innerWidth <= 768) {
-      const rect = document.getElementById('searchWrap').getBoundingClientRect();
-      const top  = Math.round(rect.bottom) + 6;
-      Object.assign(drop.style, {
-        position:     'fixed',
-        top:          top + 'px',
-        left:         '10px',
-        right:        '10px',
-        maxHeight:    (window.innerHeight - top - 12) + 'px',
-        zIndex:       '9500',
-        borderRadius: '14px',
-        boxShadow:    '0 8px 32px rgba(0,0,0,0.28)',
-        border:       '1px solid #e0d5cc',
-      });
-      if (searchOverlayBg) searchOverlayBg.classList.add('on');
-    }
-  }).observe(drop, { attributes: true, attributeFilter: ['class'] });
+  // 모바일: 검색창 포커스 → 전체화면 모드
+  const searchWrap   = document.getElementById('searchWrap');
+  const searchBackBtn = document.getElementById('searchBackBtn');
 
-  // 백드롭 탭 → 검색 닫기
-  if (searchOverlayBg) searchOverlayBg.addEventListener('click', closeDropdown);
+  function openSearchFullscreen() {
+    if (window.innerWidth > 768) return;
+    searchWrap.classList.add('search-fullscreen');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeSearchFullscreen() {
+    searchWrap.classList.remove('search-fullscreen');
+    document.body.style.overflow = '';
+    closeDropdown();
+    inp.blur();
+  }
+
+  inp.addEventListener('focus', openSearchFullscreen);
+  if (searchBackBtn) searchBackBtn.addEventListener('click', closeSearchFullscreen);
 }
 
 function closeDropdown() {
-  const d  = document.getElementById('searchDropdown');
-  const bg = document.getElementById('searchOverlayBg');
+  const d = document.getElementById('searchDropdown');
   d.classList.remove('open');
   d.innerHTML   = '';
   d.style.cssText = '';
-  if (bg) bg.classList.remove('on');
 }
 
 // Photon bbox: west,south,east,north (Turkey)
