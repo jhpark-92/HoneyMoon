@@ -251,7 +251,7 @@ async function googlePlacesSearch(q) {
     locationBias: {
       circle: {
         center: { latitude: cityCenter.lat, longitude: cityCenter.lng },
-        radius: 80000,
+        radius: 30000,
       },
     },
     languageCode: 'ko',
@@ -1189,43 +1189,37 @@ const TR_BBOX = '25.9,35.8,44.8,42.1';
 
 // 한국어 관광지명 → 영어/터키어 변환 사전
 const KO_TRANSLATE = {
-  // 이스탄불
-  '그랜드 바자르': 'Kapalı Çarşı', '그랜드바자르': 'Kapalı Çarşı', '카팔르차르슈': 'Kapalı Çarşı',
-  '스파이스 바자르': 'Spice Bazaar', '향신료 시장': 'Spice Bazaar', '이집션 바자르': 'Egyptian Bazaar Istanbul',
-  '아야소피아': 'Hagia Sophia', '성소피아': 'Hagia Sophia', '하기아소피아': 'Hagia Sophia',
-  '블루모스크': 'Blue Mosque', '블루 모스크': 'Blue Mosque', '술탄아흐메트 모스크': 'Sultan Ahmed Mosque', '술탄아흐메트': 'Sultanahmet Istanbul',
-  '톱카프 궁전': 'Topkapi Palace', '톱카프': 'Topkapi Palace',
-  '돌마바흐체 궁전': 'Dolmabahce Palace', '돌마바체 궁전': 'Dolmabahce Palace', '돌마바흐체': 'Dolmabahce Palace',
-  '갈라타 탑': 'Galata Tower', '갈라타탑': 'Galata Tower', '갈라타': 'Galata Tower',
-  '탁심 광장': 'Taksim Square', '탁심': 'Taksim Square',
-  '이스티클랄 거리': 'Istiklal Avenue', '이스티클랄': 'Istiklal Avenue',
-  '보스포러스': 'Bosphorus', '보스포루스': 'Bosphorus', '보스포러스 해협': 'Bosphorus Strait Istanbul',
-  '바실리카 시스턴': 'Basilica Cistern', '지하궁전': 'Basilica Cistern',
-  '귈하네 공원': 'Gülhane Park', '피에르 로티': 'Pierre Loti Hill Istanbul',
-  '카드쾨이': 'Kadıköy Istanbul', '베식타쉬': 'Beşiktaş Istanbul',
-  '니샨타쉬': 'Nişantaşı Istanbul',
-  // 카파도키아
-  '괴레메': 'Göreme', '괴레메 박물관': 'Göreme Open Air Museum',
-  '카파도키아': 'Cappadocia', '우치히사르': 'Uchisar', '위르귀프': 'Ürgüp', '아바노스': 'Avanos',
-  '데린쿠유': 'Derinkuyu Underground City', '카이마클리': 'Kaymaklı Underground City',
-  '러브밸리': 'Love Valley Cappadocia', '파샤바그': 'Pasabag Monks Valley',
-  '레드밸리': 'Red Valley Cappadocia', '열기구': 'Hot Air Balloon Göreme',
-  // 안탈리아
-  '칼레이치': 'Kaleiçi', '안탈리아 구시가지': 'Antalya Old Town', '칼레이치 구시가지': 'Kaleiçi Antalya',
+  // ── 이스탄불 ──
+  '그랜드 바자르': 'Grand Bazaar Istanbul', '그랜드바자르': 'Grand Bazaar Istanbul', '카팔르차르슈': 'Grand Bazaar Istanbul',
+  '스파이스 바자르': 'Spice Bazaar Istanbul', '향신료 시장': 'Spice Bazaar Istanbul', '이집션 바자르': 'Egyptian Bazaar Istanbul',
+  '아야소피아': 'Hagia Sophia Istanbul', '성소피아': 'Hagia Sophia Istanbul', '하기아소피아': 'Hagia Sophia Istanbul',
+  '블루모스크': 'Blue Mosque Istanbul', '블루 모스크': 'Blue Mosque Istanbul',
+  '술탄아흐메트 모스크': 'Sultan Ahmed Mosque Istanbul', '술탄아흐메트': 'Sultanahmet Istanbul',
+  '톱카프 궁전': 'Topkapi Palace Istanbul', '톱카프': 'Topkapi Palace Istanbul',
+  '돌마바흐체 궁전': 'Dolmabahce Palace Istanbul', '돌마바체 궁전': 'Dolmabahce Palace Istanbul', '돌마바흐체': 'Dolmabahce Palace Istanbul',
+  '갈라타 탑': 'Galata Tower Istanbul', '갈라타탑': 'Galata Tower Istanbul', '갈라타': 'Galata Tower Istanbul',
+  '탁심 광장': 'Taksim Square Istanbul', '탁심': 'Taksim Square Istanbul',
+  '이스티클랄 거리': 'Istiklal Avenue Istanbul', '이스티클랄': 'Istiklal Avenue Istanbul',
+  '보스포러스': 'Bosphorus Istanbul', '보스포루스': 'Bosphorus Istanbul',
+  '바실리카 시스턴': 'Basilica Cistern Istanbul', '지하궁전': 'Basilica Cistern Istanbul',
+  '귈하네 공원': 'Gülhane Park Istanbul', '피에르 로티': 'Pierre Loti Hill Istanbul',
+  '카드쾨이': 'Kadıköy Istanbul', '베식타쉬': 'Beşiktaş Istanbul', '니샨타쉬': 'Nişantaşı Istanbul',
+  // ── 카파도키아 ──
+  '괴레메': 'Göreme Cappadocia', '괴레메 박물관': 'Göreme Open Air Museum',
+  '카파도키아': 'Cappadocia Turkey', '우치히사르': 'Uchisar Cappadocia', '위르귀프': 'Ürgüp Cappadocia', '아바노스': 'Avanos Cappadocia',
+  '데린쿠유': 'Derinkuyu Underground City', '카이마클리': 'Kaymaklı Underground City Cappadocia',
+  '러브밸리': 'Love Valley Cappadocia', '파샤바그': 'Pasabag Monks Valley Cappadocia',
+  '레드밸리': 'Red Valley Cappadocia', '열기구': 'Hot Air Balloon Göreme Cappadocia',
+  // ── 안탈리아 ──
+  '칼레이치': 'Kaleiçi Old Town Antalya', '안탈리아 구시가지': 'Kaleiçi Old Town Antalya',
   '하드리아누스 문': 'Hadrian\'s Gate Antalya',
   '두든 폭포': 'Düden Waterfalls Antalya', '코냐알트 해변': 'Konyaaltı Beach Antalya',
-  '라라 해변': 'Lara Beach Antalya', '아스펜도스': 'Aspendos', '페르게': 'Perge Ancient City',
-  '안탈리아 박물관': 'Antalya Museum',
-  // 일반
-  '파묵칼레': 'Pamukkale', '히에라폴리스': 'Hierapolis',
-  '에페수스': 'Ephesus', '에페소스': 'Ephesus',
-  '베르가마': 'Pergamon',
-  '쿠샤다시': 'Kuşadası', '마르마리스': 'Marmaris', '보드룸': 'Bodrum',
-  '페티예': 'Fethiye', '외뤼데니즈': 'Ölüdeniz', '알라냐': 'Alanya', '시데': 'Side',
-  '이스탄불': 'Istanbul', '안탈리아': 'Antalya',
-  // 음식·카페
-  '케밥': 'kebab restaurant Turkey', '바클라바': 'baklava Istanbul', '터키 아이스크림': 'dondurma Istanbul',
-  '터키 커피': 'Turkish coffee Istanbul', '로쿰': 'Turkish delight Istanbul',
+  '라라 해변': 'Lara Beach Antalya', '아스펜도스': 'Aspendos Ancient Theatre Turkey',
+  '페르게': 'Perge Ancient City Antalya', '안탈리아 박물관': 'Antalya Museum',
+  // ── 공통 ──
+  '이스탄불': 'Istanbul Turkey', '안탈리아': 'Antalya Turkey',
+  '케밥': 'kebab restaurant Istanbul', '바클라바': 'baklava shop Istanbul',
+  '터키 커피': 'Turkish coffee cafe Istanbul', '로쿰': 'Turkish delight shop Istanbul',
 };
 
 function translateQuery(q) {
