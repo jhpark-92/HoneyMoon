@@ -2053,8 +2053,6 @@ async function init() {
 
   document.getElementById('overviewBtn').addEventListener('click', showOverview);
   document.getElementById('fitDayBtn').addEventListener('click', () => renderRoute(state.day));
-  document.getElementById('exportBtn').addEventListener('click', exportHTML);
-
   // 장소 카드 닫기
   document.getElementById('placeCardClose').addEventListener('click', closePlaceCard);
   map.on('click', closePlaceCard);
@@ -2082,111 +2080,6 @@ async function init() {
       placeCard.style.bottom = '0';
     }
   });
-
-  // 설정 모달
-  const settingsBtn    = document.getElementById('settingsBtn');
-  const settingsModal  = document.getElementById('settingsModal');
-  const settingsClose  = document.getElementById('settingsModalClose');
-  const scriptInput    = document.getElementById('scriptUrlInput');
-  const scriptSave     = document.getElementById('scriptUrlSave');
-  const scriptClear    = document.getElementById('scriptUrlClear');
-  const syncStatus     = document.getElementById('syncStatus');
-  const googleKeyInput = document.getElementById('googleKeyInput');
-  const googleKeySave  = document.getElementById('googleKeySave');
-  const googleKeyClear = document.getElementById('googleKeyClear');
-  const googleKeyStatus = document.getElementById('googleKeyStatus');
-
-  settingsBtn.addEventListener('click', () => {
-    scriptInput.value    = getScriptUrl();
-    googleKeyInput.value = getGoogleKey();
-    syncStatus.textContent      = getScriptUrl()  ? '✅ 연결됨' : '미설정';
-    syncStatus.style.color      = getScriptUrl()  ? '#26a69a' : 'var(--text-light)';
-    googleKeyStatus.textContent = getGoogleKey()  ? '✅ 등록됨 — Google Places 검색 활성화' : '미설정 (기본 검색 사용)';
-    googleKeyStatus.style.color = getGoogleKey()  ? '#26a69a' : 'var(--text-light)';
-    settingsModal.classList.add('open');
-  });
-
-  // Google API 키 저장
-  googleKeySave.addEventListener('click', async () => {
-    const key = googleKeyInput.value.trim();
-    if (!key.startsWith('AIza')) {
-      googleKeyStatus.textContent = '⚠️ 올바른 API 키를 입력해주세요 (AIza로 시작)';
-      googleKeyStatus.style.color = '#e05555';
-      return;
-    }
-    setGoogleKey(key);
-    googleKeyStatus.textContent = '🔄 키 확인 중...';
-    googleKeyStatus.style.color = 'var(--text-light)';
-    // 테스트 검색 — 실제 에러 메시지 표시
-    try {
-      const testRes = await fetch(
-        `https://places.googleapis.com/v1/places:searchText?key=${encodeURIComponent(key)}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Goog-FieldMask': 'places.displayName' },
-          body: JSON.stringify({ textQuery: 'Hagia Sophia Istanbul', languageCode: 'ko', maxResultCount: 1 }),
-        }
-      );
-      if (testRes.ok) {
-        const data = await testRes.json();
-        if (data.places?.length > 0) {
-          googleKeyStatus.textContent = '✅ 연결 성공! 이제 별점·리뷰 검색이 가능해요';
-          googleKeyStatus.style.color = '#26a69a';
-        } else {
-          googleKeyStatus.textContent = '✅ API 연결됨 (검색 결과 없음 — 정상 작동)';
-          googleKeyStatus.style.color = '#26a69a';
-        }
-      } else {
-        const errData = await testRes.json().catch(() => ({}));
-        const errMsg = errData?.error?.message || `HTTP ${testRes.status}`;
-        googleKeyStatus.textContent = `⚠️ API 오류: ${errMsg}`;
-        googleKeyStatus.style.color = '#e05555';
-      }
-    } catch (e) {
-      googleKeyStatus.textContent = `⚠️ 네트워크/CORS 오류: ${e.message}`;
-      googleKeyStatus.style.color = '#e05555';
-    }
-  });
-
-  googleKeyClear.addEventListener('click', () => {
-    setGoogleKey('');
-    googleKeyInput.value = '';
-    googleKeyStatus.textContent = '초기화됨';
-    googleKeyStatus.style.color = 'var(--text-light)';
-  });
-  settingsClose.addEventListener('click', () => settingsModal.classList.remove('open'));
-  settingsModal.addEventListener('click', e => { if (e.target === settingsModal) settingsModal.classList.remove('open'); });
-
-  scriptSave.addEventListener('click', async () => {
-    const url = scriptInput.value.trim();
-    if (!url.startsWith('https://script.google.com')) {
-      syncStatus.textContent = '⚠️ 올바른 Apps Script URL을 입력해주세요';
-      syncStatus.style.color = '#e05555';
-      return;
-    }
-    setScriptUrl(url);
-    syncStatus.textContent = '🔄 연결 확인 중...';
-    syncStatus.style.color = 'var(--text-light)';
-    const result = await cloudLoad();
-    if (result) {
-      syncStatus.textContent = '✅ 연결 성공! 클라우드 데이터를 불러왔어요';
-      syncStatus.style.color = '#26a69a';
-      applyParsed(result);
-      for (let d = 1; d <= TOTAL_DAYS; d++) ensureHotelInDay(d);
-      renderTabs(); renderItin(); renderRoute(state.day);
-    } else {
-      syncStatus.textContent = '✅ 연결됨 (저장된 데이터 없음 - 첫 사용)';
-      syncStatus.style.color = '#26a69a';
-    }
-  });
-
-  scriptClear.addEventListener('click', () => {
-    setScriptUrl('');
-    scriptInput.value = '';
-    syncStatus.textContent = '초기화됨';
-    syncStatus.style.color = 'var(--text-light)';
-  });
-
 
   // 모바일 사이드바 드래그 리사이즈
   const handle  = document.getElementById('sidebarToggle');
