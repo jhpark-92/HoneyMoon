@@ -577,37 +577,34 @@ function renderRoute(day) {
 
 // 메모리 캐시 (같은 장소 재요청 방지)
 const enrichCache = {};
+// 현재 로딩 중인 요청 ID (카드 바뀔 때 이전 결과 무시)
+let enrichToken = 0;
 
 async function fetchWikipediaSummary(name) {
-  // 직접 이름으로 요약 시도 (1 call) → 실패하면 검색 후 재시도 (2 calls)
-  for (const lang of ['ko', 'en']) {
-    try {
-      // 1차: 이름 그대로 직접 조회
-      let data = await fetch(
-        `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(name)}`
+  // 한국어 Wikipedia만 사용 (영어 fallback 없음)
+  try {
+    // 1차: 이름 그대로 직접 조회
+    let data = await fetch(
+      `https://ko.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(name)}`
+    ).then(r => r.json());
+
+    // 실패하면 검색으로 한국어 제목 찾아서 재시도
+    if (!data.extract || data.type === 'https://mediawiki.org/wiki/HyperSwitch/errors/not_found') {
+      const [, titles] = await fetch(
+        `https://ko.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(name)}&limit=1&format=json&origin=*`
       ).then(r => r.json());
+      if (!titles?.[0]) return null;
+      data = await fetch(
+        `https://ko.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(titles[0])}`
+      ).then(r => r.json());
+      if (!data.extract) return null;
+    }
 
-      // 실패하면 검색으로 제목 찾아서 재시도
-      if (!data.extract) {
-        const [, titles] = await fetch(
-          `https://${lang}.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(name)}&limit=1&format=json&origin=*`
-        ).then(r => r.json());
-        if (!titles?.[0]) continue;
-        data = await fetch(
-          `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(titles[0])}`
-        ).then(r => r.json());
-        if (!data.extract) continue;
-      }
-
-      return {
-        description: data.extract.length > 300 ? data.extract.slice(0, 300) + '…' : data.extract,
-        imageUrl:    data.thumbnail?.source || null,
-        source:      `Wikipedia (${lang === 'ko' ? '한국어' : 'English'})`,
-        sourceUrl:   data.content_urls?.desktop?.page,
-      };
-    } catch (_) {}
-  }
-  return null;
+    return {
+      description: data.extract.length > 250 ? data.extract.slice(0, 250) + '…' : data.extract,
+      imageUrl:    data.thumbnail?.source || null,
+    };
+  } catch (_) { return null; }
 }
 
 async function fetchGooglePlacePhoto(pl) {
@@ -680,16 +677,17 @@ function showPlaceCard(pl, num, day, color) {
 
   card.classList.add('open');
 
-  // 사진·설명 비동기 로드
-  loadPlaceEnrichment(pl, photoWrap, photoImg, skeleton);
+  // 사진·설명 비동기 로드 (토큰으로 이전 요청 결과 무시)
+  const token = ++enrichToken;
+  loadPlaceEnrichment(pl, photoWrap, photoImg, skeleton, token);
 }
 
-async function loadPlaceEnrichment(pl, photoWrap, photoImg, skeleton) {
+async function loadPlaceEnrichment(pl, photoWrap, photoImg, skeleton, token) {
   const cacheKey = `${pl.lat.toFixed(4)},${pl.lng.toFixed(4)}`;
 
   // 캐시 히트 → 즉시 적용
   if (enrichCache[cacheKey]) {
-    applyEnrichment(enrichCache[cacheKey], photoWrap, photoImg, skeleton);
+    if (token === enrichToken) applyEnrichment(enrichCache[cacheKey], photoWrap, photoImg, skeleton);
     return;
   }
 
@@ -699,21 +697,20 @@ async function loadPlaceEnrichment(pl, photoWrap, photoImg, skeleton) {
     fetchWikipediaSummary(pl.name),
   ]);
 
+  // 요청 도중 다른 카드가 열렸으면 무시
+  if (token !== enrichToken) return;
+
   const result = {
     desc:     gResult?.description || wResult?.description || '',
-    src:      gResult?.description ? 'Google Places' : (wResult?.source || ''),
-    srcUrl:   wResult?.sourceUrl || null,
-    imageUrl: gResult?.imageUrl  || wResult?.imageUrl  || null,
+    imageUrl: gResult?.imageUrl    || wResult?.imageUrl    || null,
   };
 
-  // 캐시에 저장
   enrichCache[cacheKey] = result;
-
   applyEnrichment(result, photoWrap, photoImg, skeleton);
 }
 
 function applyEnrichment(result, photoWrap, photoImg, skeleton) {
-  // 설명 (출처 표시 없음)
+  // 한국어 설명
   document.getElementById('placeCardDesc').textContent = result.desc || '';
   document.getElementById('placeCardDescSrc').textContent = '';
 
@@ -724,11 +721,12 @@ function applyEnrichment(result, photoWrap, photoImg, skeleton) {
       photoImg.classList.add('visible');
     };
     photoImg.onerror = () => {
-      photoWrap.classList.remove('loaded'); // 사진 없으면 공간 제거
+      // 사진 로드 실패 → 공간 제거
+      photoWrap.classList.remove('loaded');
     };
     photoImg.src = result.imageUrl;
   } else {
-    // 사진 없음 → 스켈레톤 숨기고 공간 제거
+    // 사진 없음 → 스켈레톤 공간 제거
     photoWrap.classList.remove('loaded');
   }
 }
