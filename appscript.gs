@@ -13,7 +13,7 @@ const PROP = PropertiesService.getScriptProperties();
 
 function doGet() {
   const raw     = PROP.getProperty('honeymoon_data') || '{}';
-  const gapiKey = PROP.getProperty('honeymoon_gapi_key') || '';
+  const gapiKey = PROP.getProperty('honeymoon_googlemap_key') || '';
   const data    = JSON.parse(raw);
 
   // 일정 데이터 + Google API 키 함께 반환
@@ -28,7 +28,7 @@ function doPost(e) {
 
     // Google API 키 분리 저장
     if (body._gapiKey !== undefined) {
-      PROP.setProperty('honeymoon_gapi_key', body._gapiKey);
+      PROP.setProperty('honeymoon_googlemap_key', body._gapiKey);
       delete body._gapiKey;
     }
 
