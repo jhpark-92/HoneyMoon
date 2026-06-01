@@ -576,18 +576,29 @@ function renderRoute(day) {
 //  PLACE ENRICHMENT (사진·설명)
 // ════════════════════════════════════════
 
+// 메모리 캐시 (같은 장소 재요청 방지)
+const enrichCache = {};
+
 async function fetchWikipediaSummary(name) {
+  // 직접 이름으로 요약 시도 (1 call) → 실패하면 검색 후 재시도 (2 calls)
   for (const lang of ['ko', 'en']) {
     try {
-      // 1단계: 검색으로 정확한 제목 찾기
-      const searchUrl = `https://${lang}.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(name)}&limit=1&format=json&origin=*`;
-      const [, titles] = await fetch(searchUrl).then(r => r.json());
-      if (!titles?.[0]) continue;
+      // 1차: 이름 그대로 직접 조회
+      let data = await fetch(
+        `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(name)}`
+      ).then(r => r.json());
 
-      // 2단계: 해당 페이지 요약 가져오기
-      const title = encodeURIComponent(titles[0]);
-      const data = await fetch(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${title}`).then(r => r.json());
-      if (!data.extract) continue;
+      // 실패하면 검색으로 제목 찾아서 재시도
+      if (!data.extract) {
+        const [, titles] = await fetch(
+          `https://${lang}.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(name)}&limit=1&format=json&origin=*`
+        ).then(r => r.json());
+        if (!titles?.[0]) continue;
+        data = await fetch(
+          `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(titles[0])}`
+        ).then(r => r.json());
+        if (!data.extract) continue;
+      }
 
       return {
         description: data.extract.length > 300 ? data.extract.slice(0, 300) + '…' : data.extract,
@@ -674,25 +685,42 @@ function showPlaceCard(pl, num, day, color) {
 }
 
 async function loadPlaceEnrichment(pl, photoWrap, photoImg, skeleton) {
-  // Google Places 사진 + 설명 (키 있으면 우선)
-  const gResult = await fetchGooglePlacePhoto(pl);
-  const wResult = await fetchWikipediaSummary(pl.name);
+  const cacheKey = `${pl.lat.toFixed(4)},${pl.lng.toFixed(4)}`;
 
-  // 설명: Google editorial > Wikipedia
-  const desc = gResult?.description || wResult?.description || '';
-  const src  = gResult?.description ? 'Google Places' : wResult?.source || '';
-  const srcUrl = wResult?.sourceUrl || null;
-
-  if (desc) {
-    document.getElementById('placeCardDesc').textContent = desc;
-    document.getElementById('placeCardDescSrc').innerHTML = srcUrl
-      ? `출처: <a href="${srcUrl}" target="_blank" style="color:var(--primary)">${src}</a>`
-      : `출처: ${src}`;
+  // 캐시 히트 → 즉시 적용
+  if (enrichCache[cacheKey]) {
+    applyEnrichment(enrichCache[cacheKey], photoWrap, photoImg, skeleton);
+    return;
   }
 
-  // 사진: Google > Wikipedia
-  const imageUrl = gResult?.imageUrl || wResult?.imageUrl || null;
-  if (imageUrl) {
+  // Google + Wikipedia 병렬 호출
+  const [gResult, wResult] = await Promise.all([
+    fetchGooglePlacePhoto(pl),
+    fetchWikipediaSummary(pl.name),
+  ]);
+
+  const result = {
+    desc:     gResult?.description || wResult?.description || '',
+    src:      gResult?.description ? 'Google Places' : (wResult?.source || ''),
+    srcUrl:   wResult?.sourceUrl || null,
+    imageUrl: gResult?.imageUrl  || wResult?.imageUrl  || null,
+  };
+
+  // 캐시에 저장
+  enrichCache[cacheKey] = result;
+
+  applyEnrichment(result, photoWrap, photoImg, skeleton);
+}
+
+function applyEnrichment(result, photoWrap, photoImg, skeleton) {
+  if (result.desc) {
+    document.getElementById('placeCardDesc').textContent = result.desc;
+    document.getElementById('placeCardDescSrc').innerHTML = result.srcUrl
+      ? `출처: <a href="${result.srcUrl}" target="_blank" style="color:var(--primary)">${result.src}</a>`
+      : (result.src ? `출처: ${result.src}` : '');
+  }
+
+  if (result.imageUrl) {
     photoWrap.classList.add('loaded');
     skeleton.style.display = 'flex';
     photoImg.onload = () => {
@@ -700,7 +728,7 @@ async function loadPlaceEnrichment(pl, photoWrap, photoImg, skeleton) {
       photoImg.classList.add('visible');
     };
     photoImg.onerror = () => { photoWrap.classList.remove('loaded'); };
-    photoImg.src = imageUrl;
+    photoImg.src = result.imageUrl;
   }
 }
 
