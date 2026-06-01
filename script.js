@@ -194,9 +194,10 @@ function decodeData(hash) {
 const SCRIPT_URL_KEY  = 'honeymoon-script-url';
 const GOOGLE_KEY_KEY  = 'honeymoon-google-key';
 
-function getScriptUrl()  { return localStorage.getItem(SCRIPT_URL_KEY) || ''; }
+const HARDCODED_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxsD-YpnRZ8w0I4K7lHQkSBwf-LOwTFpRj1TXTyhYGrF9tHcCuqGJ9tw5nXypH3lL15/exec';
+function getScriptUrl()  { return HARDCODED_SCRIPT_URL || localStorage.getItem(SCRIPT_URL_KEY) || ''; }
 function setScriptUrl(u) { localStorage.setItem(SCRIPT_URL_KEY, u); }
-const HARDCODED_GOOGLE_KEY = 'REMOVED'; // 소스 고정 키
+const HARDCODED_GOOGLE_KEY = 'REMOVED';
 function getGoogleKey()  { return HARDCODED_GOOGLE_KEY || localStorage.getItem(GOOGLE_KEY_KEY) || ''; }
 function setGoogleKey(k) { localStorage.setItem(GOOGLE_KEY_KEY, k); }
 
