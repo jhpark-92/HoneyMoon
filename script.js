@@ -196,7 +196,8 @@ const GOOGLE_KEY_KEY  = 'honeymoon-google-key';
 
 function getScriptUrl()  { return localStorage.getItem(SCRIPT_URL_KEY) || ''; }
 function setScriptUrl(u) { localStorage.setItem(SCRIPT_URL_KEY, u); }
-function getGoogleKey()  { return localStorage.getItem(GOOGLE_KEY_KEY) || ''; }
+const HARDCODED_GOOGLE_KEY = 'REMOVED'; // 소스 고정 키
+function getGoogleKey()  { return HARDCODED_GOOGLE_KEY || localStorage.getItem(GOOGLE_KEY_KEY) || ''; }
 function setGoogleKey(k) { localStorage.setItem(GOOGLE_KEY_KEY, k); }
 
 // ════════════════════════════════════════
