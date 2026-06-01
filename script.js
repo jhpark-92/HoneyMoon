@@ -579,6 +579,9 @@ function renderRoute(day) {
   });
 
   map.fitBounds(L.latLngBounds(lls).pad(0.22), { animate: true, maxZoom: 14 });
+
+  // 마커 표시 후 백그라운드에서 장소 정보 미리 로드
+  setTimeout(() => preloadDayEnrichment(day), 800);
 }
 
 // ════════════════════════════════════════
@@ -589,6 +592,26 @@ function renderRoute(day) {
 const enrichCache = {};
 // 현재 로딩 중인 요청 ID (카드 바뀔 때 이전 결과 무시)
 let enrichToken = 0;
+
+// 해당 날짜 장소 정보를 백그라운드에서 미리 로드
+async function preloadDayEnrichment(day) {
+  if (!getGoogleKey()) return;
+  const places = (state.itin[day] || []).filter(p => p.type !== 'hotel');
+  for (const pl of places) {
+    const cacheKey = `${pl.lat.toFixed(4)},${pl.lng.toFixed(4)}`;
+    if (enrichCache[cacheKey]) continue; // 이미 캐시됨
+    const info = await fetchPlaceInfo(pl);
+    if (info) {
+      enrichCache[cacheKey] = {
+        desc:        info.description || '',
+        imageUrl:    info.imageUrl    || null,
+        rating:      info.rating      || null,
+        reviewCount: info.reviewCount || null,
+      };
+    }
+    await new Promise(r => setTimeout(r, 300)); // 요청 간격 (rate limit 방지)
+  }
+}
 
 async function fetchPlaceInfo(pl) {
   const key = getGoogleKey();
