@@ -580,34 +580,7 @@ const enrichCache = {};
 // 현재 로딩 중인 요청 ID (카드 바뀔 때 이전 결과 무시)
 let enrichToken = 0;
 
-async function fetchWikipediaSummary(name) {
-  // 한국어 Wikipedia만 사용 (영어 fallback 없음)
-  try {
-    // 1차: 이름 그대로 직접 조회
-    let data = await fetch(
-      `https://ko.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(name)}`
-    ).then(r => r.json());
-
-    // 실패하면 검색으로 한국어 제목 찾아서 재시도
-    if (!data.extract || data.type === 'https://mediawiki.org/wiki/HyperSwitch/errors/not_found') {
-      const [, titles] = await fetch(
-        `https://ko.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(name)}&limit=1&format=json&origin=*`
-      ).then(r => r.json());
-      if (!titles?.[0]) return null;
-      data = await fetch(
-        `https://ko.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(titles[0])}`
-      ).then(r => r.json());
-      if (!data.extract) return null;
-    }
-
-    return {
-      description: data.extract.length > 250 ? data.extract.slice(0, 250) + '…' : data.extract,
-      imageUrl:    data.thumbnail?.source || null,
-    };
-  } catch (_) { return null; }
-}
-
-async function fetchGooglePlacePhoto(pl) {
+async function fetchPlaceInfo(pl) {
   const key = getGoogleKey();
   if (!key) return null;
   try {
@@ -622,7 +595,7 @@ async function fetchGooglePlacePhoto(pl) {
       headers: {
         'Content-Type': 'application/json',
         'X-Goog-Api-Key': key,
-        'X-Goog-FieldMask': 'places.photos,places.editorialSummary',
+        'X-Goog-FieldMask': 'places.photos,places.editorialSummary,places.rating,places.userRatingCount',
       },
       body: JSON.stringify(body),
     });
@@ -632,9 +605,10 @@ async function fetchGooglePlacePhoto(pl) {
 
     const photoName = place.photos?.[0]?.name;
     return {
-      imageUrl:    photoName ? `https://places.googleapis.com/v1/${photoName}/media?maxWidthPx=600&key=${key}` : null,
+      imageUrl:    photoName ? `https://places.googleapis.com/v1/${photoName}/media?maxWidthPx=800&key=${key}` : null,
       description: place.editorialSummary?.text || null,
-      source:      'Google Places',
+      rating:      place.rating || null,
+      reviewCount: place.userRatingCount || null,
     };
   } catch (_) { return null; }
 }
@@ -652,6 +626,8 @@ function showPlaceCard(pl, num, day, color) {
   document.getElementById('placeCardAddr').textContent = pl.addr || '';
   document.getElementById('placeCardDesc').textContent = '';
   document.getElementById('placeCardDescSrc').textContent = '';
+  const ratingEl = document.getElementById('placeCardRating');
+  if (ratingEl) { ratingEl.textContent = ''; ratingEl.style.display = 'none'; }
 
   // 사진 영역 — 카드 열리자마자 스켈레톤 표시
   const photoWrap = document.getElementById('placeCardPhotoWrap');
@@ -691,18 +667,16 @@ async function loadPlaceEnrichment(pl, photoWrap, photoImg, skeleton, token) {
     return;
   }
 
-  // Google + Wikipedia 병렬 호출
-  const [gResult, wResult] = await Promise.all([
-    fetchGooglePlacePhoto(pl),
-    fetchWikipediaSummary(pl.name),
-  ]);
+  const info = await fetchPlaceInfo(pl);
 
-  // 요청 도중 다른 카드가 열렸으면 무시
+  // 다른 카드가 열렸으면 무시
   if (token !== enrichToken) return;
 
   const result = {
-    desc:     gResult?.description || wResult?.description || '',
-    imageUrl: gResult?.imageUrl    || wResult?.imageUrl    || null,
+    desc:        info?.description  || '',
+    imageUrl:    info?.imageUrl     || null,
+    rating:      info?.rating       || null,
+    reviewCount: info?.reviewCount  || null,
   };
 
   enrichCache[cacheKey] = result;
@@ -710,9 +684,18 @@ async function loadPlaceEnrichment(pl, photoWrap, photoImg, skeleton, token) {
 }
 
 function applyEnrichment(result, photoWrap, photoImg, skeleton) {
-  // 한국어 설명
+  // 설명
   document.getElementById('placeCardDesc').textContent = result.desc || '';
   document.getElementById('placeCardDescSrc').textContent = '';
+
+  // 별점
+  if (result.rating) {
+    const ratingEl = document.getElementById('placeCardRating');
+    if (ratingEl) {
+      ratingEl.textContent = `⭐ ${result.rating.toFixed(1)}  (${result.reviewCount?.toLocaleString()}개 리뷰)`;
+      ratingEl.style.display = 'block';
+    }
+  }
 
   // 사진
   if (result.imageUrl) {
