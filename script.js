@@ -277,10 +277,12 @@ async function cloudSave(json) {
   const url = getScriptUrl();
   if (!url) return;
   try {
+    // 일정 데이터 + Google API 키를 함께 저장
+    const payload = { ...JSON.parse(json), _gapiKey: getGoogleKey() };
     await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain' }, // GAS는 text/plain으로 받음
-      body: json,
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(payload),
     });
   } catch (_) {}
 }
@@ -291,10 +293,15 @@ async function cloudLoad() {
   try {
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) return null;
-    const data = await res.json();
-    // 빈 객체면 null 반환
-    if (!data || Object.keys(data).length === 0) return null;
-    return data;
+    const body = await res.json();
+    if (!body || Object.keys(body).length === 0) return null;
+
+    // Google API 키 자동 복원
+    if (body._gapiKey) {
+      setGoogleKey(body._gapiKey);
+      delete body._gapiKey;
+    }
+    return body;
   } catch (_) { return null; }
 }
 
@@ -302,7 +309,7 @@ function saveState() {
   const data = { itin: state.itin, flights: state.flights };
   const json = JSON.stringify(data);
   localStorage.setItem('honeymoon-turkey-2026', json);
-  cloudSave(json); // 클라우드에 비동기 저장
+  cloudSave(json); // 클라우드에 비동기 저장 (API 키 포함)
 }
 
 function copyShareURL(btn) {

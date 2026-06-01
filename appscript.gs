@@ -9,18 +9,32 @@
 //  4. 배포 후 나오는 URL을 앱의 ⚙️ 설정에 붙여넣기
 // =============================================
 
-const DATA_KEY = 'honeymoon_data';
+const PROP = PropertiesService.getScriptProperties();
 
 function doGet() {
-  const data = PropertiesService.getScriptProperties().getProperty(DATA_KEY) || '{}';
+  const raw     = PROP.getProperty('honeymoon_data') || '{}';
+  const gapiKey = PROP.getProperty('honeymoon_gapi_key') || '';
+  const data    = JSON.parse(raw);
+
+  // 일정 데이터 + Google API 키 함께 반환
   return ContentService
-    .createTextOutput(data)
+    .createTextOutput(JSON.stringify({ ...data, _gapiKey: gapiKey }))
     .setMimeType(ContentService.MimeType.JSON);
 }
 
 function doPost(e) {
   try {
-    PropertiesService.getScriptProperties().setProperty(DATA_KEY, e.postData.contents);
+    const body = JSON.parse(e.postData.contents);
+
+    // Google API 키 분리 저장
+    if (body._gapiKey !== undefined) {
+      PROP.setProperty('honeymoon_gapi_key', body._gapiKey);
+      delete body._gapiKey;
+    }
+
+    // 일정 데이터 저장
+    PROP.setProperty('honeymoon_data', JSON.stringify(body));
+
     return ContentService
       .createTextOutput(JSON.stringify({ ok: true }))
       .setMimeType(ContentService.MimeType.JSON);
