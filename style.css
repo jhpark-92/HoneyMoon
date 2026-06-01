@@ -1210,16 +1210,19 @@ header {
   top: 14px;
   right: 16px;
   border: none;
-  background: #f5f0e8;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(4px);
   border-radius: 50%;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   font-size: 0.75rem;
-  color: var(--text-light);
+  color: var(--text);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 10; /* 사진 위에 표시 */
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
 }
 
 /* 사진 영역 */

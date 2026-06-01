@@ -705,7 +705,10 @@ async function loadPlaceEnrichment(pl, photoWrap, photoImg, skeleton) {
 }
 
 function closePlaceCard() {
-  document.getElementById('placeCard').classList.remove('open');
+  const card = document.getElementById('placeCard');
+  card.style.bottom = '';
+  card.style.transition = '';
+  card.classList.remove('open');
 }
 
 function showOverview() {
@@ -2037,11 +2040,31 @@ async function init() {
 
   // 장소 카드 닫기
   document.getElementById('placeCardClose').addEventListener('click', closePlaceCard);
-  document.getElementById('placeCard').addEventListener('click', e => {
-    if (e.target === document.getElementById('placeCard')) closePlaceCard();
-  });
-  // 지도 클릭 시 카드 닫기
   map.on('click', closePlaceCard);
+
+  // 카드 스와이프 다운으로 닫기
+  const placeCard = document.getElementById('placeCard');
+  let cardTouchStartY = 0, cardTouchStartBottom = 0;
+  placeCard.addEventListener('touchstart', e => {
+    cardTouchStartY = e.touches[0].clientY;
+    cardTouchStartBottom = 0;
+  }, { passive: true });
+  placeCard.addEventListener('touchmove', e => {
+    const dy = e.touches[0].clientY - cardTouchStartY;
+    if (dy > 0) {
+      placeCard.style.bottom = `-${dy}px`;
+      placeCard.style.transition = 'none';
+    }
+  }, { passive: true });
+  placeCard.addEventListener('touchend', e => {
+    const dy = e.changedTouches[0].clientY - cardTouchStartY;
+    placeCard.style.transition = '';
+    if (dy > 80) {
+      closePlaceCard();
+    } else {
+      placeCard.style.bottom = '0';
+    }
+  });
 
   // 설정 모달
   const settingsBtn    = document.getElementById('settingsBtn');
