@@ -1180,7 +1180,7 @@ header {
 /* ── 지도 장소 정보 카드 ── */
 .place-card {
   position: fixed;
-  bottom: -300px;
+  bottom: -100vh;
   left: 50%;
   transform: translateX(-50%);
   width: min(420px, 96vw);
