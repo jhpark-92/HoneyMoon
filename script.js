@@ -598,11 +598,10 @@ async function fetchPlaceInfo(pl) {
       languageCode: 'ko',
       maxResultCount: 1,
     };
-    const res = await fetch('https://places.googleapis.com/v1/places:searchText', {
+    const res = await fetch(`https://places.googleapis.com/v1/places:searchText?key=${encodeURIComponent(key)}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Goog-Api-Key': key,
         'X-Goog-FieldMask': 'places.photos,places.editorialSummary,places.rating,places.userRatingCount',
       },
       body: JSON.stringify(body),
