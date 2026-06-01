@@ -572,6 +572,66 @@ function renderRoute(day) {
   map.fitBounds(L.latLngBounds(lls).pad(0.22), { animate: true, maxZoom: 14 });
 }
 
+// ════════════════════════════════════════
+//  PLACE ENRICHMENT (사진·설명)
+// ════════════════════════════════════════
+
+async function fetchWikipediaSummary(name) {
+  for (const lang of ['ko', 'en']) {
+    try {
+      // 1단계: 검색으로 정확한 제목 찾기
+      const searchUrl = `https://${lang}.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(name)}&limit=1&format=json&origin=*`;
+      const [, titles] = await fetch(searchUrl).then(r => r.json());
+      if (!titles?.[0]) continue;
+
+      // 2단계: 해당 페이지 요약 가져오기
+      const title = encodeURIComponent(titles[0]);
+      const data = await fetch(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${title}`).then(r => r.json());
+      if (!data.extract) continue;
+
+      return {
+        description: data.extract.length > 300 ? data.extract.slice(0, 300) + '…' : data.extract,
+        imageUrl:    data.thumbnail?.source || null,
+        source:      `Wikipedia (${lang === 'ko' ? '한국어' : 'English'})`,
+        sourceUrl:   data.content_urls?.desktop?.page,
+      };
+    } catch (_) {}
+  }
+  return null;
+}
+
+async function fetchGooglePlacePhoto(pl) {
+  const key = getGoogleKey();
+  if (!key) return null;
+  try {
+    const body = {
+      textQuery: pl.name,
+      locationBias: { circle: { center: { latitude: pl.lat, longitude: pl.lng }, radius: 2000 } },
+      languageCode: 'ko',
+      maxResultCount: 1,
+    };
+    const res = await fetch('https://places.googleapis.com/v1/places:searchText', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': key,
+        'X-Goog-FieldMask': 'places.photos,places.editorialSummary',
+      },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    const place = data.places?.[0];
+    if (!place) return null;
+
+    const photoName = place.photos?.[0]?.name;
+    return {
+      imageUrl:    photoName ? `https://places.googleapis.com/v1/${photoName}/media?maxWidthPx=600&key=${key}` : null,
+      description: place.editorialSummary?.text || null,
+      source:      'Google Places',
+    };
+  } catch (_) { return null; }
+}
+
 // ── 지도 장소 카드 ──
 function showPlaceCard(pl, num, day, color) {
   const card     = document.getElementById('placeCard');
@@ -579,9 +639,20 @@ function showPlaceCard(pl, num, day, color) {
   const catColor = pl.osmKey ? categoryColor(pl.osmKey) : color;
   const icon     = (pl.osmKey && CAT_ICON[catLabel]) ? CAT_ICON[catLabel] : '📍';
 
+  // 기본 정보 즉시 표시
   document.getElementById('placeCardIcon').textContent = icon;
   document.getElementById('placeCardName').textContent = `${num}. ${pl.name}`;
   document.getElementById('placeCardAddr').textContent = pl.addr || '';
+  document.getElementById('placeCardDesc').textContent = '';
+  document.getElementById('placeCardDescSrc').textContent = '';
+
+  // 사진 영역 초기화 (스켈레톤 표시)
+  const photoWrap = document.getElementById('placeCardPhotoWrap');
+  const photoImg  = document.getElementById('placeCardImg');
+  const skeleton  = document.getElementById('placeCardPhotoSkeleton');
+  photoWrap.classList.remove('loaded');
+  photoImg.classList.remove('visible');
+  photoImg.src = '';
 
   // Day + 카테고리 뱃지
   const meta = document.getElementById('placeCardMeta');
@@ -590,18 +661,47 @@ function showPlaceCard(pl, num, day, color) {
     ${catLabel ? `<span style="background:${catColor};color:white;padding:2px 8px;border-radius:8px;font-size:0.65rem;font-weight:700">${catLabel}</span>` : ''}
   `;
 
-  // 구글맵 링크
   document.getElementById('placeCardGmap').href =
     `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(pl.name)}&query_place_ll=${pl.lat},${pl.lng}`;
 
-  // 삭제 버튼
   const delBtn = document.getElementById('placeCardDel');
-  delBtn.onclick = () => {
-    removePlace(pl.id, day);
-    closePlaceCard();
-  };
+  delBtn.onclick = () => { removePlace(pl.id, day); closePlaceCard(); };
 
   card.classList.add('open');
+
+  // 사진·설명 비동기 로드
+  loadPlaceEnrichment(pl, photoWrap, photoImg, skeleton);
+}
+
+async function loadPlaceEnrichment(pl, photoWrap, photoImg, skeleton) {
+  // Google Places 사진 + 설명 (키 있으면 우선)
+  const gResult = await fetchGooglePlacePhoto(pl);
+  const wResult = await fetchWikipediaSummary(pl.name);
+
+  // 설명: Google editorial > Wikipedia
+  const desc = gResult?.description || wResult?.description || '';
+  const src  = gResult?.description ? 'Google Places' : wResult?.source || '';
+  const srcUrl = wResult?.sourceUrl || null;
+
+  if (desc) {
+    document.getElementById('placeCardDesc').textContent = desc;
+    document.getElementById('placeCardDescSrc').innerHTML = srcUrl
+      ? `출처: <a href="${srcUrl}" target="_blank" style="color:var(--primary)">${src}</a>`
+      : `출처: ${src}`;
+  }
+
+  // 사진: Google > Wikipedia
+  const imageUrl = gResult?.imageUrl || wResult?.imageUrl || null;
+  if (imageUrl) {
+    photoWrap.classList.add('loaded');
+    skeleton.style.display = 'flex';
+    photoImg.onload = () => {
+      skeleton.style.display = 'none';
+      photoImg.classList.add('visible');
+    };
+    photoImg.onerror = () => { photoWrap.classList.remove('loaded'); };
+    photoImg.src = imageUrl;
+  }
 }
 
 function closePlaceCard() {

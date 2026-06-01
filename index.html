@@ -150,13 +150,25 @@
 <div id="placeCard" class="place-card">
   <div class="place-card-drag"></div>
   <button class="place-card-close" id="placeCardClose">✕</button>
-  <div class="place-card-icon" id="placeCardIcon"></div>
+
+  <!-- 사진 영역 -->
+  <div class="place-card-photo-wrap" id="placeCardPhotoWrap">
+    <div class="place-card-photo-skeleton" id="placeCardPhotoSkeleton">📷</div>
+    <img class="place-card-photo-img" id="placeCardImg" src="" alt="" />
+  </div>
+
   <div class="place-card-body">
-    <div class="place-card-name" id="placeCardName"></div>
+    <div class="place-card-name-row">
+      <span class="place-card-icon" id="placeCardIcon"></span>
+      <span class="place-card-name" id="placeCardName"></span>
+    </div>
     <div class="place-card-meta" id="placeCardMeta"></div>
     <div class="place-card-addr" id="placeCardAddr"></div>
-    <div class="place-card-dist" id="placeCardDist"></div>
+    <!-- 설명 영역 -->
+    <div class="place-card-desc" id="placeCardDesc"></div>
+    <div class="place-card-desc-src" id="placeCardDescSrc"></div>
   </div>
+
   <div class="place-card-actions">
     <button class="place-card-del" id="placeCardDel">🗑️ 일정에서 제거</button>
     <a class="place-card-gmap" id="placeCardGmap" target="_blank">🗺️ 구글맵에서 보기</a>

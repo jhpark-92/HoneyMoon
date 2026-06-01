@@ -1222,11 +1222,56 @@ header {
   justify-content: center;
 }
 
+/* 사진 영역 */
+.place-card-photo-wrap {
+  width: calc(100% + 40px);
+  margin: -12px -20px 10px;
+  height: 180px;
+  overflow: hidden;
+  border-radius: 20px 20px 0 0;
+  position: relative;
+  background: #f0ebe3;
+  display: none; /* 사진 로드 전 숨김 */
+}
+.place-card-photo-wrap.loaded { display: block; }
+
+.place-card-photo-skeleton {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  opacity: 0.25;
+  background: linear-gradient(90deg, #f0ebe3 25%, #e8e0d5 50%, #f0ebe3 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.place-card-photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+.place-card-photo-img.visible { display: block; }
+
+/* 이름 행 */
+.place-card-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
 .place-card-icon {
-  font-size: 1.8rem;
-  text-align: center;
+  font-size: 1.3rem;
   line-height: 1;
-  margin-bottom: 2px;
+  flex-shrink: 0;
 }
 
 .place-card-body { flex: 1; }
@@ -1236,7 +1281,24 @@ header {
   font-weight: 800;
   color: var(--text);
   line-height: 1.3;
-  margin-bottom: 5px;
+}
+
+/* 설명 */
+.place-card-desc {
+  font-size: 0.78rem;
+  color: var(--text-mid);
+  line-height: 1.65;
+  margin-top: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.place-card-desc-src {
+  font-size: 0.62rem;
+  color: var(--text-light);
+  margin-top: 4px;
 }
 
 .place-card-meta {
