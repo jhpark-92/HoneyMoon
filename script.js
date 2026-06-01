@@ -152,6 +152,9 @@ async function loadState() {
     history.replaceState(null, '', location.pathname);
   }
 
+  // API 키는 항상 Apps Script에서만 가져오도록 localStorage 캐시 제거
+  localStorage.removeItem(GOOGLE_KEY_KEY);
+
   // 1순위: 클라우드 (Apps Script URL이 있으면 자동 로드)
   const cloud = await cloudLoad();
   if (cloud) {
@@ -278,12 +281,11 @@ async function cloudSave(json) {
   const url = getScriptUrl();
   if (!url) return;
   try {
-    // 일정 데이터 + Google API 키를 함께 저장
-    const payload = { ...JSON.parse(json), _gapiKey: getGoogleKey() };
+    // 일정 데이터만 저장 (API 키는 Apps Script 속성으로 별도 관리)
     await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(payload),
+      body: json,
     });
   } catch (_) {}
 }
