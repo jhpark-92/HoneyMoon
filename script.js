@@ -2049,30 +2049,49 @@ async function init() {
 
 
   // 모바일 사이드바 드래그 리사이즈
-  // Pointer Events + setPointerCapture: 손가락이 핸들 밖으로 나가도 추적 유지
   const handle  = document.getElementById('sidebarToggle');
   const sidebar = document.querySelector('.sidebar');
   if (handle && sidebar) {
-    let active = false, startY = 0, startH = 0;
-    const MIN_H  = 158; // 탭+검색창 항상 표시 보장
-    const getMaxH = () => window.innerHeight - handle.offsetHeight;
+    let active = false, startY = 0, startH = 0, didDrag = false;
+    const MIN_H   = 0;   // 완전 접기 허용
+    const SNAP_H  = 50;  // 이 이하로 내리면 완전 접기로 snap
+    const DEFAULT_H = () => Math.round(window.innerHeight * 0.5);
+    const getMaxH   = () => window.innerHeight - handle.offsetHeight - 58; // 헤더 제외
 
     handle.addEventListener('pointerdown', e => {
-      active  = true;
-      startY  = e.clientY;
-      startH  = sidebar.offsetHeight;
-      handle.setPointerCapture(e.pointerId); // 핸들 밖으로 이동해도 이벤트 계속 수신
+      active   = true;
+      didDrag  = false;
+      startY   = e.clientY;
+      startH   = sidebar.offsetHeight;
+      handle.setPointerCapture(e.pointerId);
       e.preventDefault();
     });
 
     handle.addEventListener('pointermove', e => {
       if (!active) return;
-      const dy   = e.clientY - startY;
+      const dy = e.clientY - startY;
+      if (Math.abs(dy) > 4) didDrag = true;
       const newH = Math.min(Math.max(startH + dy, MIN_H), getMaxH());
       sidebar.style.height = newH + 'px';
     });
 
-    handle.addEventListener('pointerup',     () => { if (active) { active = false; map.invalidateSize(); } });
+    handle.addEventListener('pointerup', () => {
+      if (!active) return;
+      active = false;
+
+      if (!didDrag) {
+        // 탭처럼 누른 경우: 완전 접기 ↔ 기본 높이 토글
+        const collapsed = sidebar.offsetHeight < SNAP_H;
+        sidebar.style.height = (collapsed ? DEFAULT_H() : 0) + 'px';
+      } else {
+        // 드래그 끝: SNAP_H 이하면 완전 접기
+        if (sidebar.offsetHeight < SNAP_H) {
+          sidebar.style.height = '0px';
+        }
+      }
+      map.invalidateSize();
+    });
+
     handle.addEventListener('pointercancel', () => { active = false; });
   }
 }

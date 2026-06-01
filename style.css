@@ -1421,7 +1421,7 @@ header {
     flex-shrink: 0;
     overflow: hidden;
     height: 50vh;
-    min-height: 158px; /* 탭(~74px) + 검색창(~80px) 항상 보이도록 */
+    min-height: 0; /* 완전 접기 허용 */
     position: relative;
     z-index: 100; /* map-btns(z-index:50)보다 높아야 사이드바 확장 시 버튼 가려짐 */
   }
