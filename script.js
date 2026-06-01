@@ -549,9 +549,8 @@ function renderRoute(day) {
     lineJoin: 'round', lineCap: 'round',
   }).addTo(routeLg);
 
-  let num = 0;
-  nonHotel.forEach(pl => {
-    num++;
+  nonHotel.forEach((pl, idx) => {
+    const num = idx + 1; // const로 캡처 → 클로저 버그 방지
     const ico = L.divIcon({
       html: `<div style="
         background:${color};color:white;
@@ -657,11 +656,12 @@ function showPlaceCard(pl, num, day, color) {
   document.getElementById('placeCardDesc').textContent = '';
   document.getElementById('placeCardDescSrc').textContent = '';
 
-  // 사진 영역 초기화 (스켈레톤 표시)
+  // 사진 영역 — 카드 열리자마자 스켈레톤 표시
   const photoWrap = document.getElementById('placeCardPhotoWrap');
   const photoImg  = document.getElementById('placeCardImg');
   const skeleton  = document.getElementById('placeCardPhotoSkeleton');
-  photoWrap.classList.remove('loaded');
+  photoWrap.classList.add('loaded');   // 즉시 공간 확보
+  skeleton.style.display = 'flex';
   photoImg.classList.remove('visible');
   photoImg.src = '';
 
@@ -713,22 +713,23 @@ async function loadPlaceEnrichment(pl, photoWrap, photoImg, skeleton) {
 }
 
 function applyEnrichment(result, photoWrap, photoImg, skeleton) {
-  if (result.desc) {
-    document.getElementById('placeCardDesc').textContent = result.desc;
-    document.getElementById('placeCardDescSrc').innerHTML = result.srcUrl
-      ? `출처: <a href="${result.srcUrl}" target="_blank" style="color:var(--primary)">${result.src}</a>`
-      : (result.src ? `출처: ${result.src}` : '');
-  }
+  // 설명 (출처 표시 없음)
+  document.getElementById('placeCardDesc').textContent = result.desc || '';
+  document.getElementById('placeCardDescSrc').textContent = '';
 
+  // 사진
   if (result.imageUrl) {
-    photoWrap.classList.add('loaded');
-    skeleton.style.display = 'flex';
     photoImg.onload = () => {
       skeleton.style.display = 'none';
       photoImg.classList.add('visible');
     };
-    photoImg.onerror = () => { photoWrap.classList.remove('loaded'); };
+    photoImg.onerror = () => {
+      photoWrap.classList.remove('loaded'); // 사진 없으면 공간 제거
+    };
     photoImg.src = result.imageUrl;
+  } else {
+    // 사진 없음 → 스켈레톤 숨기고 공간 제거
+    photoWrap.classList.remove('loaded');
   }
 }
 
@@ -752,9 +753,8 @@ function showOverview() {
     const lls   = places.map(p => [p.lat, p.lng]);
     L.polyline(lls, { color, weight: 2.5, opacity: 0.65 }).addTo(routeLg);
 
-    let num = 0;
-    nonHotel.forEach(pl => {
-      num++;
+    nonHotel.forEach((pl, idx) => {
+      const num = idx + 1;
       const ico = L.divIcon({
         html: `<div style="
           background:${color};color:white;
