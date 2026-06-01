@@ -566,20 +566,47 @@ function renderRoute(day) {
     });
     L.marker([pl.lat, pl.lng], { icon: ico })
       .addTo(placeLg)
-      .bindPopup(`
-        <div class="pop-name">${num}. ${esc(pl.name)}</div>
-        ${pl.addr ? `<div class="pop-addr">${esc(pl.addr)}</div>` : ''}
-        <button class="pop-del" onclick="popRemove('${pl.id}',${day})">🗑️ 삭제</button>
-      `);
+      .on('click', () => showPlaceCard(pl, num, day, color));
   });
 
   map.fitBounds(L.latLngBounds(lls).pad(0.22), { animate: true, maxZoom: 14 });
 }
 
-window.popRemove = function(id, day) {
-  removePlace(id, day);
-  map.closePopup();
-};
+// ── 지도 장소 카드 ──
+function showPlaceCard(pl, num, day, color) {
+  const card     = document.getElementById('placeCard');
+  const catLabel = pl.osmKey ? categoryLabel(pl.osmKey, pl.osmValue) : null;
+  const catColor = pl.osmKey ? categoryColor(pl.osmKey) : color;
+  const icon     = (pl.osmKey && CAT_ICON[catLabel]) ? CAT_ICON[catLabel] : '📍';
+
+  document.getElementById('placeCardIcon').textContent = icon;
+  document.getElementById('placeCardName').textContent = `${num}. ${pl.name}`;
+  document.getElementById('placeCardAddr').textContent = pl.addr || '';
+
+  // Day + 카테고리 뱃지
+  const meta = document.getElementById('placeCardMeta');
+  meta.innerHTML = `
+    <span style="background:${color};color:white;padding:2px 8px;border-radius:8px;font-size:0.65rem;font-weight:700">Day ${day}</span>
+    ${catLabel ? `<span style="background:${catColor};color:white;padding:2px 8px;border-radius:8px;font-size:0.65rem;font-weight:700">${catLabel}</span>` : ''}
+  `;
+
+  // 구글맵 링크
+  document.getElementById('placeCardGmap').href =
+    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(pl.name)}&query_place_ll=${pl.lat},${pl.lng}`;
+
+  // 삭제 버튼
+  const delBtn = document.getElementById('placeCardDel');
+  delBtn.onclick = () => {
+    removePlace(pl.id, day);
+    closePlaceCard();
+  };
+
+  card.classList.add('open');
+}
+
+function closePlaceCard() {
+  document.getElementById('placeCard').classList.remove('open');
+}
 
 function showOverview() {
   routeLg.clearLayers();
@@ -610,7 +637,7 @@ function showOverview() {
       });
       L.marker([pl.lat, pl.lng], { icon: ico })
         .addTo(routeLg)
-        .bindTooltip(`Day ${day} · ${pl.name}`, { direction: 'top', offset: [0, -12] });
+        .on('click', () => showPlaceCard(pl, num, day, color));
     });
   }
 
@@ -1907,6 +1934,14 @@ async function init() {
   document.getElementById('overviewBtn').addEventListener('click', showOverview);
   document.getElementById('fitDayBtn').addEventListener('click', () => renderRoute(state.day));
   document.getElementById('exportBtn').addEventListener('click', exportHTML);
+
+  // 장소 카드 닫기
+  document.getElementById('placeCardClose').addEventListener('click', closePlaceCard);
+  document.getElementById('placeCard').addEventListener('click', e => {
+    if (e.target === document.getElementById('placeCard')) closePlaceCard();
+  });
+  // 지도 클릭 시 카드 닫기
+  map.on('click', closePlaceCard);
 
   // 설정 모달
   const settingsBtn    = document.getElementById('settingsBtn');
