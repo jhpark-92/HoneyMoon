@@ -2065,6 +2065,7 @@ async function init() {
       startH   = sidebar.offsetHeight;
       handle.setPointerCapture(e.pointerId);
       e.preventDefault();
+      e.stopPropagation();
     });
 
     handle.addEventListener('pointermove', e => {
