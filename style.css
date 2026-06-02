@@ -127,17 +127,19 @@ header {
 
 .tabs-notes-btn {
   display: none; /* 데스크탑에서는 헤더 버튼 사용 */
-  font-size: 0.65rem;
-  font-weight: 700;
-  background: var(--primary);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  padding: 3px 9px;
+  width: 26px;
+  height: 26px;
+  font-size: 0.9rem;
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: 7px;
   cursor: pointer;
-  font-family: inherit;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
 }
-.tabs-notes-btn:hover { background: var(--primary-dark); }
+.tabs-notes-btn:hover { background: var(--bg); }
 
 .tabs-scroller {
   position: relative;
@@ -1731,7 +1733,7 @@ header {
   .export-btn { display: none; }
   .notes-open-btn { display: none; } /* 모바일: 사이드바 버튼 사용 */
   .hd-right { gap: 0; }
-  .tabs-notes-btn { display: block; } /* 모바일: 탭 영역에 메모 버튼 표시 */
+  .tabs-notes-btn { display: flex; } /* 모바일: 탭 영역에 메모 버튼 표시 */
   .hd-logo { font-size: 1.3rem; }
   .hd-title h1 { font-size: 0.92rem; }
   .hd-title p { font-size: 0.54rem; letter-spacing: 0.8px; }
