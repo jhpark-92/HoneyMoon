@@ -1440,6 +1440,46 @@ header {
 /* 데스크탑에서 숨김 */
 .search-back-btn { display: none; }
 
+/* ── 이동 수단 커넥터 ── */
+.transport-connector {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  margin: -2px 0;
+}
+.tc-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.tc-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #f8f3ee;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  max-width: 100%;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+}
+.tc-icon { font-size: 0.85rem; }
+.tc-mode {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-mid);
+}
+.tc-tip {
+  font-size: 0.6rem;
+  color: var(--primary);
+  font-weight: 500;
+}
+
 /* ── 메모 패널 ── */
 .notes-open-btn {
   background: rgba(255,255,255,0.15);

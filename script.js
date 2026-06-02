@@ -1608,6 +1608,37 @@ function categoryColor(key) {
   return colors[key] || '#8a7a72';
 }
 
+// ── 거리 기반 이동 수단 추천 ──
+function getTransport(km, city) {
+  const walkMin = Math.round(km / 4 * 60);
+  const taxiMin = Math.round(km / 20 * 60); // 시내 교통 감안
+
+  if (km < 0.6) {
+    return { icon: '🚶', mode: `도보 약 ${walkMin}분`, tip: null };
+  }
+  if (km < 1.5) {
+    return { icon: '🚶', mode: `도보 약 ${walkMin}분`, tip: '택시 이용 시 5분 내' };
+  }
+  if (city === 'istanbul') {
+    if (km < 4) {
+      return { icon: '🚕', mode: `택시 약 ${taxiMin}~${taxiMin + 5}분`, tip: 'T1 트램 이용 가능 (이스탄불카트)' };
+    }
+    if (km < 10) {
+      return { icon: '🚕', mode: `택시 약 ${taxiMin}~${taxiMin + 10}분`, tip: '트램·지하철 환승 추천' };
+    }
+    return { icon: '🚕', mode: `택시 약 ${taxiMin}분+`, tip: '우버·비탁시 앱 추천' };
+  }
+  if (city === 'cappadocia') {
+    if (km < 5) return { icon: '🚕', mode: `택시 약 ${taxiMin}분`, tip: '렌터카 이용 시 편리' };
+    return { icon: '🚗', mode: `택시·렌터카 약 ${taxiMin}분`, tip: '투어 차량 이용 추천' };
+  }
+  if (city === 'antalya') {
+    if (km < 3) return { icon: '🚕', mode: `택시 약 ${taxiMin}분`, tip: '칼레이치 근처는 도보권' };
+    return { icon: '🚕', mode: `택시 약 ${taxiMin}분`, tip: 'AntalyaRay 트램 이용 가능' };
+  }
+  return { icon: '🚕', mode: `택시 약 ${taxiMin}분`, tip: null };
+}
+
 function matchedHotels(q) {
   const lower = q.toLowerCase();
   return HOTELS.filter(h =>
@@ -1902,6 +1933,8 @@ function renderItin() {
   let n = 0;
   places.forEach((pl, i) => { if (pl.type !== 'hotel') numMap[i] = ++n; });
 
+  const city = cityOfDay(day);
+
   places.forEach((pl, i) => {
     const isHotel = pl.type === 'hotel';
     if (!isHotel) placeNum++;
@@ -1910,6 +1943,22 @@ function renderItin() {
     const fromLbl = prev
       ? (prev.type === 'hotel' ? `${prev.emoji} 호텔에서` : `${numMap[i - 1]}번에서`)
       : '';
+
+    // 이동 수단 커넥터 (이전 장소 → 현재 장소)
+    if (prev && km > 0) {
+      const tr = getTransport(km, city);
+      html += `
+        <div class="transport-connector">
+          <div class="tc-line"></div>
+          <div class="tc-badge">
+            <span class="tc-icon">${tr.icon}</span>
+            <span class="tc-mode">${tr.mode}</span>
+            ${tr.tip ? `<span class="tc-tip">${tr.tip}</span>` : ''}
+          </div>
+          <div class="tc-line"></div>
+        </div>`;
+    }
+
     const badge = isHotel
       ? `<span style="font-size:1.1rem">${pl.emoji}</span>`
       : `<span class="place-num" style="background:${color}">${placeNum}</span>`;
