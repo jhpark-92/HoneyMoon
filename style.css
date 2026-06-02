@@ -109,14 +109,35 @@ header {
   flex-shrink: 0;
 }
 
+.tabs-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 5px;
+}
+
 .tabs-label {
   font-size: 0.6rem;
   font-weight: 700;
   color: var(--text-light);
   letter-spacing: 1.2px;
   text-transform: uppercase;
-  padding: 0 2px 5px;
+  padding: 0 2px;
 }
+
+.tabs-notes-btn {
+  display: none; /* 데스크탑에서는 헤더 버튼 사용 */
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 3px 9px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.tabs-notes-btn:hover { background: var(--primary-dark); }
 
 .tabs-scroller {
   position: relative;
@@ -1708,7 +1729,9 @@ header {
 
   .hd-hotels { display: none; }
   .export-btn { display: none; }
-  .hd-right { gap: 0; }   /* 모바일: 호텔칩 없으니 gap 제거 */
+  .notes-open-btn { display: none; } /* 모바일: 사이드바 버튼 사용 */
+  .hd-right { gap: 0; }
+  .tabs-notes-btn { display: block; } /* 모바일: 탭 영역에 메모 버튼 표시 */
   .hd-logo { font-size: 1.3rem; }
   .hd-title h1 { font-size: 0.92rem; }
   .hd-title p { font-size: 0.54rem; letter-spacing: 0.8px; }

@@ -2515,10 +2515,15 @@ function initNotes() {
     saveState();
   }
 
-  btn.addEventListener('click', () => {
+  function openNotes() {
     panel.classList.add('open');
     renderNotesPanel();
-  });
+  }
+  btn.addEventListener('click', openNotes);
+
+  // 모바일 탭 영역 버튼
+  const tabsNotesBtn = document.getElementById('tabsNotesBtn');
+  if (tabsNotesBtn) tabsNotesBtn.addEventListener('click', openNotes);
   close.addEventListener('click', () => panel.classList.remove('open'));
   panel.addEventListener('click', e => { if (e.target === panel) panel.classList.remove('open'); });
 
