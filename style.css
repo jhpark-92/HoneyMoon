@@ -1731,9 +1731,8 @@ header {
 
   .hd-hotels { display: none; }
   .export-btn { display: none; }
-  .notes-open-btn { display: none; } /* 모바일: 사이드바 버튼 사용 */
-  .hd-right { gap: 0; }
-  .tabs-notes-btn { display: flex; } /* 모바일: 탭 영역에 메모 버튼 표시 */
+  .hd-right { gap: 8px; }
+  .tabs-notes-btn { display: none; } /* 모바일: 헤더 버튼 사용 */
   .hd-logo { font-size: 1.3rem; }
   .hd-title h1 { font-size: 0.92rem; }
   .hd-title p { font-size: 0.54rem; letter-spacing: 0.8px; }
