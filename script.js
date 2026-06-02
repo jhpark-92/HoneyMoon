@@ -97,6 +97,13 @@ function flightOfDay(day) {
 // 공유용 저장 시 이 줄에 데이터가 삽입됩니다
 const SHARED_DATA = null;
 
+const NOTE_SECTIONS = [
+  { id: 'transport', icon: '🚇', title: '대중교통', placeholder: '공항 이동 방법, 버스·지하철 노선, 택시 앱 등 교통 관련 메모' },
+  { id: 'tickets',   icon: '🎫', title: '입장권',   placeholder: '예약 필요 명소, 예매 링크, 가격, 예약 번호 등' },
+  { id: 'checklist', icon: '🎒', title: '준비물',   placeholder: '여권, 충전기, 선크림, 환전 등 챙겨야 할 것들' },
+  { id: 'memo',      icon: '📝', title: '기타 메모', placeholder: '비상 연락처, 숙소 체크인 정보, 현지 유심, 기타 메모' },
+];
+
 const state = {
   day: 1,
   itin: Object.fromEntries(
@@ -107,6 +114,7 @@ const state = {
     7:  { dep: 'ASR', depTime: '', arrTime: '' },
     11: { arr: 'IST', depTime: '', arrTime: '' },
   },
+  notes: { transport: '', tickets: '', checklist: '', memo: '' },
 };
 
 function ensureHotelInDay(day) {
@@ -136,6 +144,7 @@ function applyParsed(p) {
     if (p.flights[7])  Object.assign(state.flights[7],  p.flights[7]);
     if (p.flights[11]) Object.assign(state.flights[11], p.flights[11]);
   }
+  if (p.notes) Object.assign(state.notes, p.notes);
 }
 
 async function loadState() {
@@ -309,7 +318,7 @@ async function cloudLoad() {
 }
 
 function saveState() {
-  const data = { itin: state.itin, flights: state.flights };
+  const data = { itin: state.itin, flights: state.flights, notes: state.notes };
   const json = JSON.stringify(data);
   localStorage.setItem('honeymoon-turkey-2026', json);
   cloudSave(json); // 클라우드에 비동기 저장 (API 키 포함)
@@ -2074,6 +2083,7 @@ async function init() {
   renderRoute(1);
   initSearch();
   initTabsNav();
+  initNotes();
 
   document.getElementById('overviewBtn').addEventListener('click', showOverview);
   document.getElementById('fitDayBtn').addEventListener('click', () => renderRoute(state.day));
@@ -2152,6 +2162,56 @@ async function init() {
 
     handle.addEventListener('pointercancel', () => { active = false; });
   }
+}
+
+// ════════════════════════════════════════
+//  NOTES PANEL
+// ════════════════════════════════════════
+
+function initNotes() {
+  const btn   = document.getElementById('notesBtn');
+  const panel = document.getElementById('notesPanel');
+  const close = document.getElementById('notesPanelClose');
+  if (!btn || !panel) return;
+
+  // 탭 전환
+  let activeTab = NOTE_SECTIONS[0].id;
+  function renderNotesPanel() {
+    // 탭 헤더
+    const tabsHtml = NOTE_SECTIONS.map(s => `
+      <button class="notes-tab${s.id === activeTab ? ' active' : ''}" data-id="${s.id}">
+        ${s.icon} ${s.title}
+      </button>`).join('');
+    document.getElementById('notesTabs').innerHTML = tabsHtml;
+
+    // 현재 탭 내용
+    const sec = NOTE_SECTIONS.find(s => s.id === activeTab);
+    document.getElementById('notesTextarea').value    = state.notes[activeTab] || '';
+    document.getElementById('notesTextarea').placeholder = sec.placeholder;
+
+    // 탭 클릭 이벤트
+    document.querySelectorAll('.notes-tab').forEach(t => {
+      t.addEventListener('click', () => {
+        activeTab = t.dataset.id;
+        renderNotesPanel();
+      });
+    });
+  }
+
+  btn.addEventListener('click', () => {
+    panel.classList.add('open');
+    renderNotesPanel();
+  });
+  close.addEventListener('click', () => panel.classList.remove('open'));
+  panel.addEventListener('click', e => { if (e.target === panel) panel.classList.remove('open'); });
+
+  // 자동 저장 (500ms 디바운스)
+  let saveTimer = null;
+  document.getElementById('notesTextarea').addEventListener('input', e => {
+    state.notes[activeTab] = e.target.value;
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveState, 500);
+  });
 }
 
 document.addEventListener('DOMContentLoaded', init);

@@ -25,6 +25,7 @@
     </div>
   </div>
   <div class="hd-right">
+    <button class="notes-open-btn" id="notesBtn" title="메모">📋</button>
     <div class="hd-hotels">
       <div class="hotel-chip">
         <strong>🕌 Elysium Taksim</strong>
@@ -95,6 +96,18 @@
 </div>
 
 
+
+<!-- 메모 패널 -->
+<div class="notes-panel" id="notesPanel">
+  <div class="notes-panel-box">
+    <div class="notes-panel-header">
+      <span class="notes-panel-title">📋 여행 메모</span>
+      <button class="notes-panel-close" id="notesPanelClose">✕</button>
+    </div>
+    <div class="notes-tabs" id="notesTabs"></div>
+    <textarea class="notes-textarea" id="notesTextarea"></textarea>
+  </div>
+</div>
 
 <!-- 모바일 전용 검색 모달 (DOM 최상단 독립 요소) -->
 <div id="mobileModal" class="mobile-modal">

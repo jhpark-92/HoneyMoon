@@ -1440,6 +1440,111 @@ header {
 /* 데스크탑에서 숨김 */
 .search-back-btn { display: none; }
 
+/* ── 메모 패널 ── */
+.notes-open-btn {
+  background: rgba(255,255,255,0.15);
+  border: 1.5px solid rgba(255,255,255,0.28);
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.notes-open-btn:hover { background: rgba(255,255,255,0.28); }
+
+.notes-panel {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 9000;
+  align-items: center;
+  justify-content: center;
+}
+.notes-panel.open { display: flex; }
+
+.notes-panel-box {
+  background: white;
+  border-radius: 18px;
+  width: min(560px, 95vw);
+  height: min(600px, 85vh);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.22);
+  overflow: hidden;
+}
+
+.notes-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.notes-panel-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text);
+}
+.notes-panel-close {
+  border: none;
+  background: none;
+  font-size: 1rem;
+  color: var(--text-light);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.notes-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 12px 16px 0;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.notes-tab {
+  border: 1.5px solid var(--border);
+  background: white;
+  border-radius: 20px;
+  padding: 5px 13px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--text-mid);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.notes-tab:hover { border-color: var(--primary); color: var(--primary); }
+.notes-tab.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+.notes-textarea {
+  flex: 1;
+  margin: 12px 16px 16px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: var(--text);
+  resize: none;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.notes-textarea:focus { border-color: var(--primary); }
+.notes-textarea::placeholder { color: #c0b5ae; font-size: 0.82rem; }
+
 /* ── SIDEBAR RESIZE HANDLE (모바일 전용) ── */
 .sidebar-toggle {
   display: none; /* 데스크탑에서는 숨김 */
