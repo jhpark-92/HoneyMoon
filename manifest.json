@@ -1,0 +1,25 @@
+{
+  "name": "신혼여행 튀르키예 플래너",
+  "short_name": "허니문 플래너",
+  "description": "이스탄불 · 카파도키아 · 안탈리아 신혼여행 일정 플래너",
+  "start_url": "/HoneyMoon/",
+  "scope": "/HoneyMoon/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#1a6e8a",
+  "background_color": "#f5f0e8",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
