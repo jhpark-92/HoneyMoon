@@ -361,13 +361,45 @@ const NAME_KO_MAP = {
   // 이스탄불 주요 관광지
   'hagia sophia':                  '아야소피아',
   'ayasofya':                      '아야소피아',
+  'ayasofya-i kebir':              '아야소피아',
+  'sultanahmet camii':             '블루 모스크',
   'blue mosque':                   '블루 모스크',
   'sultan ahmed mosque':           '블루 모스크',
+  'sultan ahmet camii':            '블루 모스크',
   'topkapi palace':                '톱카프 궁전',
   'dolmabahce palace':             '돌마바흐체 궁전',
   'galata tower':                  '갈라타 탑',
   'taksim square':                 '탁심 광장',
+  'taksim meydani':                '탁심 광장',
+  'taksim meydanı':                '탁심 광장',
+  'eminonu':                       '에미뇌뉘',
+  'eminönü':                       '에미뇌뉘',
+  'eminonu iskelesi':              '에미뇌뉘 선착장',
+  'eminönü i̇skelesi':             '에미뇌뉘 선착장',
+  'galata koprusu':                '갈라타 다리',
+  'galata köprüsü':                '갈라타 다리',
+  'kapali carsi':                  '그랜드 바자르',
+  'kapalı çarşı':                  '그랜드 바자르',
+  'misir carsisi':                 '스파이스 바자르',
+  'mısır çarşısı':                 '스파이스 바자르',
+  'yerebatan sarnici':             '바실리카 시스턴',
+  'yerebatan sarnıcı':             '바실리카 시스턴',
+  'topkapi sarayi':                '톱카프 궁전',
+  'topkapı sarayı':                '톱카프 궁전',
+  'dolmabahce sarayi':             '돌마바흐체 궁전',
+  'dolmabahçe sarayı':             '돌마바흐체 궁전',
+  'galata kulesi':                 '갈라타 탑',
+  'bogazici':                      '보스포러스',
+  'boğaziçi':                      '보스포러스',
+  'goreme':                        '괴레메',
+  'göreme':                        '괴레메',
+  'kaleici':                       '칼레이치',
+  'kaleiçi':                       '칼레이치',
   'istiklal avenue':               '이스티클랄 거리',
+  'i̇stiklal caddesi':             '이스티클랄 거리',   // 터키어 소문자 변환
+  'istiklal caddesi':              '이스티클랄 거리',
+  'i̇stiklal':                     '이스티클랄 거리',
+  'istiklal':                      '이스티클랄 거리',
   'grand bazaar':                  '그랜드 바자르',
   'spice bazaar':                  '스파이스 바자르',
   'basilica cistern':              '바실리카 시스턴',
@@ -405,13 +437,23 @@ const NAME_CAT_MAP = {
   '칼레이치': '관광지', '하드리아누스 문': '관광지', '두든 폭포': '자연', '코냐알트 해변': '자연',
 };
 
+// 터키어 특수문자 포함 소문자 변환 (İ→i, Ş→ş, Ğ→ğ, Ü→ü, Ö→ö, Ç→ç)
+function toNormalLower(str) {
+  return str
+    .replace(/İ/g, 'i').replace(/I/g, 'i')
+    .replace(/Ş/g, 'ş').replace(/Ğ/g, 'ğ')
+    .replace(/Ü/g, 'ü').replace(/Ö/g, 'ö').replace(/Ç/g, 'ç')
+    .toLowerCase();
+}
+
 function migrateNames(itin) {
   for (let d = 1; d <= TOTAL_DAYS; d++) {
     if (!Array.isArray(itin[d])) continue;
     itin[d].forEach(pl => {
-      // 이름 한국어 변환 (대소문자 무관)
+      // 이름 한국어 변환 (터키어 특수문자 포함 대소문자 무관)
       if (pl.name) {
-        const mapped = NAME_KO_MAP[pl.name.toLowerCase()];
+        const key = toNormalLower(pl.name);
+        const mapped = NAME_KO_MAP[key];
         if (mapped) pl.name = mapped;
       }
       // osmValue(카테고리)가 없으면 이름 기반으로 보정
