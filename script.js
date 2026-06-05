@@ -599,10 +599,10 @@ function migrateNames(itin) {
         const mapped = NAME_KO_MAP[key];
         if (mapped) pl.name = mapped;
       }
-      // osmValue(카테고리)가 없으면 이름 기반으로 보정
-      if (pl.osmKey === '_google' && !pl.osmValue && pl.name) {
+      // osmValue(카테고리)가 없으면 이름 기반으로 보정 (osmKey 무관)
+      if (!pl.osmValue && pl.name) {
         const cat = NAME_CAT_MAP[pl.name];
-        if (cat) pl.osmValue = cat;
+        if (cat) { pl.osmKey = '_google'; pl.osmValue = cat; }
       }
     });
   }

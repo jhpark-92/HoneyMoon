@@ -314,11 +314,11 @@ header {
   display: flex;
   align-items: flex-start;
   gap: 4px;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
 }
 
 .place-name-row .place-name {
-  flex: 1;
+  flex: 1 1 60%;
   min-width: 0;
 }
 
