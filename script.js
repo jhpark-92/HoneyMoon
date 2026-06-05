@@ -439,15 +439,37 @@ const PLACE_FIELD_MASK = [
 
 // Google Places 타입 → 한국어 카테고리
 function googleTypeToKo(types = []) {
-  if (types.some(t => ['restaurant','food','meal_delivery','meal_takeaway','cafe','bakery','bar'].includes(t)))
-    return types.includes('cafe') || types.includes('bakery') ? '카페·디저트' : '식당';
-  if (types.some(t => ['tourist_attraction','museum','historic','church','mosque','place_of_worship','amusement_park','aquarium','zoo'].includes(t)))
+  const has = (...list) => types.some(t => list.includes(t));
+  // 카페·디저트 (식당보다 먼저 체크)
+  if (has('cafe','coffee_shop','bakery','dessert_shop','ice_cream_shop','tea_house','patisserie'))
+    return '카페·디저트';
+  // 식당
+  if (has('restaurant','food','meal_delivery','meal_takeaway','bar','night_club',
+           'fast_food_restaurant','seafood_restaurant','steak_house','sushi_restaurant',
+           'pizza_restaurant','ramen_restaurant','sandwich_shop','brunch_restaurant'))
+    return '식당';
+  // 관광지 (문화·역사·종교·체험 통합)
+  if (has('tourist_attraction','museum','historic','church','mosque','place_of_worship',
+           'amusement_park','aquarium','zoo','art_gallery','cultural_landmark',
+           'historical_place','monument','castle','ruins','national_monument',
+           'archaeological_site','heritage_site','performing_arts_theater',
+           'observation_deck','planetarium','science_museum'))
     return '관광지';
-  if (types.some(t => ['shopping_mall','clothing_store','jewelry_store','store','supermarket','market'].includes(t)))
-    return '쇼핑';
-  if (types.some(t => ['park','natural_feature','beach','campground'].includes(t)))
+  // 자연
+  if (has('park','natural_feature','beach','campground','national_park','hiking_area',
+           'botanical_garden','garden','waterfall','cave','hot_spring','mountain','lake'))
     return '자연';
-  if (types.some(t => ['lodging','hotel'].includes(t))) return '호텔';
+  // 쇼핑
+  if (has('shopping_mall','clothing_store','jewelry_store','store','supermarket','market',
+           'gift_shop','book_store','electronics_store','department_store','bazaar',
+           'convenience_store','grocery_store','souvenir_shop','outlet_mall'))
+    return '쇼핑';
+  // 호텔
+  if (has('lodging','hotel','hostel','resort_hotel','motel','bed_and_breakfast'))
+    return '호텔';
+  // point_of_interest 등 미분류도 관광지로 처리
+  if (has('point_of_interest','establishment','landmark','local_government_office'))
+    return '관광지';
   return null;
 }
 
@@ -874,7 +896,7 @@ async function fetchPlaceInfo(pl) {
 function showPlaceCard(pl, num, day, color) {
   const card     = document.getElementById('placeCard');
   const catLabel = pl.osmKey ? categoryLabel(pl.osmKey, pl.osmValue) : null;
-  const catColor = pl.osmKey ? categoryColor(pl.osmKey) : color;
+  const catColor = pl.osmKey ? categoryColor(pl.osmKey, pl.osmValue) : color;
   const icon     = (pl.osmKey && CAT_ICON[catLabel]) ? CAT_ICON[catLabel] : '📍';
 
   // 기본 정보 즉시 표시
@@ -1359,6 +1381,7 @@ const CAT_COLOR = {
   '관광지': '#1a6e8a', '쇼핑': '#6a1b9a',
   '자연': '#2e7d32',  '식당': '#e05a00',
   '카페·디저트': '#a0522d', '체험': '#c0392b',
+  '호텔': '#c9935a', '박물관': '#1a6e8a',
 };
 const CAT_ICON = {
   '관광지': '🗺️', '쇼핑': '🛍️',
@@ -1671,6 +1694,8 @@ async function photonFetch(q) {
 
 // 카테고리 한국어 레이블
 function categoryLabel(key, value) {
+  // Google Places로 추가된 장소: osmValue가 이미 한국어 카테고리
+  if (key === '_google') return value || null;
   const map = {
     tourism:  { museum:'박물관', attraction:'관광지', hotel:'호텔', hostel:'호스텔',
                 gallery:'갤러리', viewpoint:'전망대', ruins:'유적', monument:'기념물',
@@ -1691,7 +1716,9 @@ function categoryLabel(key, value) {
 }
 
 // 카테고리별 뱃지 색상
-function categoryColor(key) {
+function categoryColor(key, value) {
+  // Google Places로 추가된 장소: value(한국어 카테고리)로 색상 결정
+  if (key === '_google') return CAT_COLOR[value] || '#8a7a72';
   const colors = {
     tourism: '#1a6e8a', historic: '#1a6e8a',
     amenity: '#e05a00',
@@ -2043,7 +2070,7 @@ function renderItin() {
       : '';
 
     const catLabel = (!isHotel && pl.osmKey) ? categoryLabel(pl.osmKey, pl.osmValue) : null;
-    const catColor = (!isHotel && pl.osmKey) ? categoryColor(pl.osmKey) : null;
+    const catColor = (!isHotel && pl.osmKey) ? categoryColor(pl.osmKey, pl.osmValue) : null;
 
     html += `
       <div class="place-item${isHotel ? ' is-hotel' : ''}" data-day="${day}" data-idx="${i}">
