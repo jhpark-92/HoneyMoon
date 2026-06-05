@@ -2430,6 +2430,65 @@ function updateFlightCardDisplay(day) {
 //  INIT
 // ════════════════════════════════════════
 
+// 한국어 여부 판별
+function isKoreanName(name) {
+  return /[가-힯]/.test(name);
+}
+
+// 비한국어 장소 이름을 Google Places로 재조회해 한국어로 교체
+async function enrichKoreanNames() {
+  const key = getGoogleKey();
+  if (!key) return;
+
+  const targets = [];
+  for (let d = 1; d <= TOTAL_DAYS; d++) {
+    for (const pl of (state.itin[d] || [])) {
+      if (pl.type === 'hotel') continue;
+      if (isKoreanName(pl.name)) continue;
+      if (!pl.lat || !pl.lng) continue;
+      targets.push({ pl, d });
+    }
+  }
+  if (!targets.length) return;
+
+  let changed = false;
+  for (const { pl } of targets) {
+    try {
+      const body = {
+        textQuery: pl.name,
+        locationBias: { circle: { center: { latitude: pl.lat, longitude: pl.lng }, radius: 300 } },
+        languageCode: 'ko',
+        maxResultCount: 1,
+      };
+      const res = await fetch(`${PLACES_API}?key=${encodeURIComponent(key)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Goog-FieldMask': 'places.displayName,places.types' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) continue;
+      const data = await res.json();
+      const found = data.places?.[0];
+      if (!found) continue;
+
+      const koName = found.displayName?.text;
+      if (koName && koName !== pl.name) {
+        pl.name = koName;
+        changed = true;
+      }
+      // 카테고리도 보정
+      if (found.types && (!pl.osmValue || pl.osmKey === '_google')) {
+        const cat = googleTypeToKo(found.types);
+        if (cat) { pl.osmKey = '_google'; pl.osmValue = cat; changed = true; }
+      }
+    } catch (_) {}
+  }
+
+  if (changed) {
+    saveState();
+    renderItin();
+  }
+}
+
 async function init() {
   await loadState();
   initMap();
@@ -2437,6 +2496,8 @@ async function init() {
   renderItin();
   renderRoute(1);
   initSearch();
+  // 백그라운드: 영어/터키어 이름 장소를 한국어로 자동 보정
+  enrichKoreanNames();
   initTabsNav();
   initNotes();
 
