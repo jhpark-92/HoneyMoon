@@ -76,7 +76,7 @@ const BOOKED_FLIGHTS = [
   { date: '7/1',  depDay: 1,  dep: 'ICN', arr: 'IST', depTime: '10:25', arrTime: '16:10', flightNo: 'OZ0551', tag: '출국' },
   { date: '7/5',  depDay: 5,  dep: 'IST', arr: 'NAV', depTime: '13:45', arrTime: '15:05', flightNo: 'TK2006', tag: null  },
   { date: '7/7',  depDay: 7,  dep: 'ASR', arr: 'AYT', depTime: '21:20', arrTime: '22:40', flightNo: 'XQ7033', tag: null  },
-  { date: '7/11', depDay: 11, dep: 'AYT', arr: 'IST', depTime: '12:55', arrTime: '14:30', flightNo: 'TK2417', tag: null  },
+  { date: '7/11', depDay: 11, dep: 'AYT', arr: 'IST', depTime: '12:35', arrTime: '14:10', flightNo: 'TK2435', tag: null  },
   { date: '7/11', depDay: 11, dep: 'IST', arr: 'ICN', depTime: '17:30', arrTime: '09:20+1', flightNo: 'OZ0552', tag: '귀국' },
 ];
 
@@ -111,7 +111,7 @@ function buildDefaultFlightNote() {
     '',
     '[ 예약번호 ]',
     'OZ0551 / OZ0552 아시아나 예약번호: ',
-    'TK2006 / TK2417 터키항공 예약번호: ',
+    'TK2006 / TK2435 터키항공 예약번호: ',
     'XQ7033 선익스프레스 예약번호: ',
     '',
     '[ 공항 → 호텔 이동 ]',
@@ -141,7 +141,7 @@ function buildDefaultFlightNote() {
     '    호텔 셔틀 or 택시 약 200~300TL / 20~30분',
     '',
     '▶ 안탈리아 → 이스탄불 → 인천 귀국 (7/11)',
-    '  TK2417  AYT→IST  12:55 출발 → 14:30 도착',
+    '  TK2435  AYT→IST  12:35 출발 → 14:10 도착',
     '  OZ0552  IST→ICN  17:30 출발 → 익일 09:20 도착',
     '  ※ 환승 3시간, 같은 IST 신공항 (수하물 재수취 후 국제선 체크인)',
     '  터키항공→아시아나 체크인 카운터 이동 필요',
