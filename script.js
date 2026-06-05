@@ -27,8 +27,8 @@ function fmtDay(day) {
 const HOTELS = [
   {
     id: 'istanbul',
-    name: 'Elysium Taksim Hotel',
-    aliases: ['엘리시움', '엘리시움 탁심', 'elysium'],
+    name: '엘리시움 탁심 호텔',
+    aliases: ['엘리시움', '엘리시움 탁심', 'elysium', 'Elysium Taksim Hotel'],
     city: '이스탄불',
     emoji: '🕌',
     lat: 41.0370, lng: 28.9856,
@@ -36,8 +36,8 @@ const HOTELS = [
   },
   {
     id: 'cappadocia',
-    name: 'Lord of Cappadocia',
-    aliases: ['로드 오브 카파도키아', '카파도키아 호텔', 'lord cappadocia'],
+    name: '로드 오브 카파도키아',
+    aliases: ['로드 오브 카파도키아', '카파도키아 호텔', 'lord cappadocia', 'Lord of Cappadocia'],
     city: '카파도키아',
     emoji: '🎈',
     lat: 38.6381, lng: 34.7977,
@@ -45,8 +45,8 @@ const HOTELS = [
   },
   {
     id: 'antalya',
-    name: 'Megasaray Westbeach Antalya',
-    aliases: ['메가사라이', '웨스트비치', 'megasaray', 'westbeach'],
+    name: '메가사라이 웨스트비치 안탈리아',
+    aliases: ['메가사라이', '웨스트비치', 'megasaray', 'westbeach', 'Megasaray Westbeach Antalya'],
     city: '안탈리아',
     emoji: '🏖️',
     lat: 36.8750, lng: 30.6500,
@@ -344,8 +344,62 @@ function ensureHotelInDay(day) {
   }, ...others];
 }
 
+// 저장된 영어 장소 이름 → 한국어 마이그레이션 맵
+const NAME_KO_MAP = {
+  // 호텔
+  'Elysium Taksim Hotel':          '엘리시움 탁심 호텔',
+  'Elysium Taksim':                '엘리시움 탁심 호텔',
+  'Lord of Cappadocia':            '로드 오브 카파도키아',
+  'Megasaray Westbeach Antalya':   '메가사라이 웨스트비치 안탈리아',
+  'Megasaray Westbeach':           '메가사라이 웨스트비치 안탈리아',
+  // 공항
+  'Istanbul Airport':              '이스탄불 공항',
+  'Istanbul Ataturk Airport':      '이스탄불 공항',
+  'Istanbul Havalimani':           '이스탄불 공항',
+  'Antalya Airport':               '안탈리아 공항',
+  'Kayseri Airport':               '카이세리 공항',
+  'Nevsehir Airport':              '네브셰히르 공항',
+  // 이스탄불 주요 관광지
+  'Hagia Sophia':                  '아야소피아',
+  'Blue Mosque':                   '블루 모스크',
+  'Topkapi Palace':                '톱카프 궁전',
+  'Dolmabahce Palace':             '돌마바흐체 궁전',
+  'Galata Tower':                  '갈라타 탑',
+  'Taksim Square':                 '탁심 광장',
+  'Istiklal Avenue':               '이스티클랄 거리',
+  'Grand Bazaar':                  '그랜드 바자르',
+  'Spice Bazaar':                  '스파이스 바자르',
+  'Basilica Cistern':              '바실리카 시스턴',
+  'Bosphorus':                     '보스포러스',
+  'Galata Bridge':                 '갈라타 다리',
+  // 카파도키아
+  'Goreme Open Air Museum':        '괴레메 야외박물관',
+  'Göreme Open Air Museum':        '괴레메 야외박물관',
+  'Uchisar Castle':                '우치히사르 성',
+  'Derinkuyu Underground City':    '데린쿠유 지하도시',
+  'Love Valley':                   '러브 밸리',
+  // 안탈리아
+  'Kaleici':                       '칼레이치',
+  "Hadrian's Gate":                '하드리아누스 문',
+  'Duden Waterfall':               '두든 폭포',
+  'Düden Şelalesi':                '두든 폭포',
+  'Konyaalti Beach':               '코냐알트 해변',
+};
+
+function migrateNames(itin) {
+  for (let d = 1; d <= TOTAL_DAYS; d++) {
+    if (!Array.isArray(itin[d])) continue;
+    itin[d].forEach(pl => {
+      if (pl.name && NAME_KO_MAP[pl.name]) {
+        pl.name = NAME_KO_MAP[pl.name];
+      }
+    });
+  }
+}
+
 function applyParsed(p) {
   const itin = p.itin || p;
+  migrateNames(itin);
   for (let d = 1; d <= TOTAL_DAYS; d++) {
     if (Array.isArray(itin[d])) state.itin[d] = itin[d];
   }
@@ -603,15 +657,15 @@ async function exportHTML() {
   </div>
   <div class="hd-hotels">
     <div class="hotel-chip">
-      <strong>🕌 Elysium Taksim</strong>
+      <strong>🕌 엘리시움 탁심</strong>
       7/1–7/5 · 이스탄불
     </div>
     <div class="hotel-chip">
-      <strong>🎈 Lord of Cappadocia</strong>
+      <strong>🎈 로드 오브 카파도키아</strong>
       7/5–7/7 · 카파도키아
     </div>
     <div class="hotel-chip">
-      <strong>🏖️ Megasaray Westbeach</strong>
+      <strong>🏖️ 메가사라이 웨스트비치</strong>
       7/7–7/11 · 안탈리아
     </div>
   </div>
