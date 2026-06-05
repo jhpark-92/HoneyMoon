@@ -344,54 +344,80 @@ function ensureHotelInDay(day) {
   }, ...others];
 }
 
-// 저장된 영어 장소 이름 → 한국어 마이그레이션 맵
+// 저장된 영어 장소 이름 → 한국어 마이그레이션 맵 (대소문자 무관 매칭)
 const NAME_KO_MAP = {
   // 호텔
-  'Elysium Taksim Hotel':          '엘리시움 탁심 호텔',
-  'Elysium Taksim':                '엘리시움 탁심 호텔',
-  'Lord of Cappadocia':            '로드 오브 카파도키아',
-  'Megasaray Westbeach Antalya':   '메가사라이 웨스트비치 안탈리아',
-  'Megasaray Westbeach':           '메가사라이 웨스트비치 안탈리아',
+  'elysium taksim hotel':          '엘리시움 탁심 호텔',
+  'elysium taksim':                '엘리시움 탁심 호텔',
+  'lord of cappadocia':            '로드 오브 카파도키아',
+  'megasaray westbeach antalya':   '메가사라이 웨스트비치 안탈리아',
+  'megasaray westbeach':           '메가사라이 웨스트비치 안탈리아',
   // 공항
-  'Istanbul Airport':              '이스탄불 공항',
-  'Istanbul Ataturk Airport':      '이스탄불 공항',
-  'Istanbul Havalimani':           '이스탄불 공항',
-  'Antalya Airport':               '안탈리아 공항',
-  'Kayseri Airport':               '카이세리 공항',
-  'Nevsehir Airport':              '네브셰히르 공항',
+  'istanbul airport':              '이스탄불 공항',
+  'istanbul havalimani':           '이스탄불 공항',
+  'antalya airport':               '안탈리아 공항',
+  'kayseri airport':               '카이세리 공항',
+  'nevsehir airport':              '네브셰히르 공항',
   // 이스탄불 주요 관광지
-  'Hagia Sophia':                  '아야소피아',
-  'Blue Mosque':                   '블루 모스크',
-  'Topkapi Palace':                '톱카프 궁전',
-  'Dolmabahce Palace':             '돌마바흐체 궁전',
-  'Galata Tower':                  '갈라타 탑',
-  'Taksim Square':                 '탁심 광장',
-  'Istiklal Avenue':               '이스티클랄 거리',
-  'Grand Bazaar':                  '그랜드 바자르',
-  'Spice Bazaar':                  '스파이스 바자르',
-  'Basilica Cistern':              '바실리카 시스턴',
-  'Bosphorus':                     '보스포러스',
-  'Galata Bridge':                 '갈라타 다리',
+  'hagia sophia':                  '아야소피아',
+  'ayasofya':                      '아야소피아',
+  'blue mosque':                   '블루 모스크',
+  'sultan ahmed mosque':           '블루 모스크',
+  'topkapi palace':                '톱카프 궁전',
+  'dolmabahce palace':             '돌마바흐체 궁전',
+  'galata tower':                  '갈라타 탑',
+  'taksim square':                 '탁심 광장',
+  'istiklal avenue':               '이스티클랄 거리',
+  'grand bazaar':                  '그랜드 바자르',
+  'spice bazaar':                  '스파이스 바자르',
+  'basilica cistern':              '바실리카 시스턴',
+  'bosphorus':                     '보스포러스',
+  'galata bridge':                 '갈라타 다리',
+  'pierre loti':                   '피에르 로티',
+  'gulhane park':                  '귈하네 공원',
+  // 식당·카페
+  'tarihi sultanahmet köftecisi selim usta': '타리히 술타나흐메트 쾨프테지시',
+  'tarihi sultanahmet koftecisi selim usta': '타리히 술타나흐메트 쾨프테지시',
   // 카파도키아
-  'Goreme Open Air Museum':        '괴레메 야외박물관',
-  'Göreme Open Air Museum':        '괴레메 야외박물관',
-  'Uchisar Castle':                '우치히사르 성',
-  'Derinkuyu Underground City':    '데린쿠유 지하도시',
-  'Love Valley':                   '러브 밸리',
+  'goreme open air museum':        '괴레메 야외박물관',
+  'göreme open air museum':        '괴레메 야외박물관',
+  'uchisar castle':                '우치히사르 성',
+  'derinkuyu underground city':    '데린쿠유 지하도시',
+  'love valley':                   '러브 밸리',
   // 안탈리아
-  'Kaleici':                       '칼레이치',
-  "Hadrian's Gate":                '하드리아누스 문',
-  'Duden Waterfall':               '두든 폭포',
-  'Düden Şelalesi':                '두든 폭포',
-  'Konyaalti Beach':               '코냐알트 해변',
+  'kaleici':                       '칼레이치',
+  "hadrian's gate":                '하드리아누스 문',
+  'duden waterfall':               '두든 폭포',
+  'düden şelalesi':                '두든 폭포',
+  'konyaalti beach':               '코냐알트 해변',
+};
+
+// 이름 기반 카테고리 자동 보정 맵 (osmValue가 빈값인 경우)
+const NAME_CAT_MAP = {
+  '이스탄불 공항': '관광지', '안탈리아 공항': '관광지', '카이세리 공항': '관광지', '네브셰히르 공항': '관광지',
+  '아야소피아': '관광지', '블루 모스크': '관광지', '톱카프 궁전': '관광지',
+  '돌마바흐체 궁전': '관광지', '갈라타 탑': '관광지', '탁심 광장': '관광지',
+  '이스티클랄 거리': '쇼핑', '그랜드 바자르': '쇼핑', '스파이스 바자르': '쇼핑',
+  '바실리카 시스턴': '관광지', '보스포러스': '자연', '갈라타 다리': '관광지',
+  '타리히 술타나흐메트 쾨프테지시': '식당',
+  '괴레메 야외박물관': '관광지', '우치히사르 성': '관광지',
+  '데린쿠유 지하도시': '관광지', '러브 밸리': '자연',
+  '칼레이치': '관광지', '하드리아누스 문': '관광지', '두든 폭포': '자연', '코냐알트 해변': '자연',
 };
 
 function migrateNames(itin) {
   for (let d = 1; d <= TOTAL_DAYS; d++) {
     if (!Array.isArray(itin[d])) continue;
     itin[d].forEach(pl => {
-      if (pl.name && NAME_KO_MAP[pl.name]) {
-        pl.name = NAME_KO_MAP[pl.name];
+      // 이름 한국어 변환 (대소문자 무관)
+      if (pl.name) {
+        const mapped = NAME_KO_MAP[pl.name.toLowerCase()];
+        if (mapped) pl.name = mapped;
+      }
+      // osmValue(카테고리)가 없으면 이름 기반으로 보정
+      if (pl.osmKey === '_google' && !pl.osmValue && pl.name) {
+        const cat = NAME_CAT_MAP[pl.name];
+        if (cat) pl.osmValue = cat;
       }
     });
   }
