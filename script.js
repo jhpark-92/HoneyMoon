@@ -73,11 +73,11 @@ const AIRPORT_OPTIONS = {
 
 // 확정된 전체 항공편 (국제선 포함)
 const BOOKED_FLIGHTS = [
-  { date: '7/1',  depDay: 1,  dep: 'ICN', arr: 'IST', depTime: '10:25', arrTime: null,  flightNo: 'OZ0551', tag: '출국' },
+  { date: '7/1',  depDay: 1,  dep: 'ICN', arr: 'IST', depTime: '10:25', arrTime: '16:10', flightNo: 'OZ0551', tag: '출국' },
   { date: '7/5',  depDay: 5,  dep: 'IST', arr: 'NAV', depTime: '13:45', arrTime: '15:05', flightNo: 'TK2006', tag: null  },
   { date: '7/7',  depDay: 7,  dep: 'ASR', arr: 'AYT', depTime: '21:20', arrTime: '22:40', flightNo: 'XQ7033', tag: null  },
   { date: '7/11', depDay: 11, dep: 'AYT', arr: 'IST', depTime: '12:55', arrTime: '14:30', flightNo: 'TK2417', tag: null  },
-  { date: '7/11', depDay: 11, dep: 'IST', arr: 'ICN', depTime: '17:30', arrTime: null,  flightNo: 'OZ0552', tag: '귀국' },
+  { date: '7/11', depDay: 11, dep: 'IST', arr: 'ICN', depTime: '17:30', arrTime: '09:20+1', flightNo: 'OZ0552', tag: '귀국' },
 ];
 
 function hotelOfDay(day) {
@@ -142,7 +142,7 @@ function buildDefaultFlightNote() {
     '',
     '▶ 안탈리아 → 이스탄불 → 인천 귀국 (7/11)',
     '  TK2417  AYT→IST  12:55 출발 → 14:30 도착',
-    '  OZ0552  IST→ICN  17:30 출발',
+    '  OZ0552  IST→ICN  17:30 출발 → 익일 09:20 도착',
     '  ※ 환승 3시간, 같은 IST 신공항 (수하물 재수취 후 국제선 체크인)',
     '  터키항공→아시아나 체크인 카운터 이동 필요',
   ];
@@ -666,6 +666,12 @@ function dist(la1, lo1, la2, lo2) {
   const a = Math.sin(dLa/2)**2 +
             Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dLo/2)**2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+// km 값을 1km 이상이면 "1.2km", 미만이면 "350m" 형식으로 변환
+function fmtDist(km) {
+  if (km >= 1) return `${km.toFixed(1)}km`;
+  return `${Math.round(km * 1000)}m`;
 }
 
 // ════════════════════════════════════════
@@ -2052,7 +2058,7 @@ function renderItin() {
           </div>
           ${isHotel && subLabel ? `<div class="place-addr">${subLabel}</div>` :
             pl.addr ? `<div class="place-addr">${esc(pl.addr)}</div>` : ''}
-          ${prev ? `<div class="place-dist">📍 ${fromLbl} ${km.toFixed(1)}km</div>` : ''}
+          ${prev ? `<div class="place-dist">📍 ${fromLbl} ${fmtDist(km)}</div>` : ''}
           <div class="place-memo-text"${pl.memo ? '' : ' style="display:none"'}>${esc(pl.memo || '')}</div>
           <textarea class="place-memo-input" data-id="${pl.id}" data-day="${day}" placeholder="메모를 입력하세요..." maxlength="200">${esc(pl.memo || '')}</textarea>
         </div>
@@ -2072,7 +2078,7 @@ function renderItin() {
     html += `
       <div class="day-summary">
         <span>📏 총 이동거리</span>
-        <strong>${totalKm.toFixed(1)} km</strong>
+        <strong>${fmtDist(totalKm)}</strong>
         <span style="color:#ccc">·</span>
         <span>${nonHotel.length}곳</span>
       </div>
@@ -2456,7 +2462,7 @@ function buildTransportGuide() {
               <span class="tg-leg-mode">${tr.mode}</span>
               ${tr.tip ? `<span class="tg-leg-tip">${tr.tip}</span>` : ''}
             </div>
-            <span class="tg-leg-km">${km.toFixed(1)}km</span>
+            <span class="tg-leg-km">${fmtDist(km)}</span>
           </div>
           <div class="tg-leg-to">${esc(toName)}</div>
         </div>`;
