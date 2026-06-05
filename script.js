@@ -1121,7 +1121,7 @@ function showOverview() {
 
 function addPlace(data) {
   const day = state.day;
-  state.itin[day].push({
+  const pl = {
     id: `p_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
     name: data.name,
     lat: parseFloat(data.lat),
@@ -1129,7 +1129,8 @@ function addPlace(data) {
     addr: data.addr || '',
     osmKey:   data.osmKey   || '',
     osmValue: data.osmValue || '',
-  });
+  };
+  state.itin[day].push(pl);
   saveState();
   renderTabs();
   renderItin();
@@ -1139,6 +1140,41 @@ function addPlace(data) {
   if (window._closeMobileModal) window._closeMobileModal();
   document.getElementById('searchInput').value = '';
   document.getElementById('searchClear').classList.remove('visible');
+
+  // 이름이 한국어가 아니면 백그라운드에서 즉시 한국어 변환 시도
+  if (!isKoreanName(pl.name)) {
+    enrichSinglePlace(pl, day);
+  }
+}
+
+async function enrichSinglePlace(pl, day) {
+  const key = getGoogleKey();
+  if (!key || !pl.lat || !pl.lng) return;
+  try {
+    const body = {
+      textQuery: pl.name,
+      locationBias: { circle: { center: { latitude: pl.lat, longitude: pl.lng }, radius: 200 } },
+      languageCode: 'ko',
+      maxResultCount: 1,
+    };
+    const res = await fetch(`${PLACES_API}?key=${encodeURIComponent(key)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Goog-FieldMask': 'places.displayName,places.types' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    const found = data.places?.[0];
+    if (!found) return;
+    let changed = false;
+    const koName = found.displayName?.text;
+    if (koName && koName !== pl.name) { pl.name = koName; changed = true; }
+    if (found.types && pl.osmKey === '_google' && !pl.osmValue) {
+      const cat = googleTypeToKo(found.types);
+      if (cat) { pl.osmValue = cat; changed = true; }
+    }
+    if (changed) { saveState(); renderItin(); }
+  } catch (_) {}
 }
 
 function removePlace(id, day) {
@@ -2158,7 +2194,7 @@ function renderItin() {
         ${badge}
         <div class="place-content">
           <div class="place-name-row">
-            <span class="place-name">${esc(pl.name)}</span>
+            <span class="place-name${!isHotel ? ' editable-name' : ''}" data-id="${pl.id}" data-day="${day}" title="${!isHotel ? '클릭하여 이름 수정' : ''}">${esc(pl.name)}</span>
             ${catLabel ? `<span class="place-cat-badge" style="background:${catColor}">${catLabel}</span>` : ''}
             ${!isHotel ? `<button class="place-copy" data-name="${esc(pl.name)}" title="이름 복사">⎘</button>` : ''}
             <button class="place-memo-btn${pl.memo ? ' has-memo' : ''}" data-id="${pl.id}" data-day="${day}" title="메모">📝</button>
@@ -2211,6 +2247,37 @@ function renderItin() {
     btn.addEventListener('click', e => {
       e.stopPropagation();
       removePlace(btn.dataset.id, parseInt(btn.dataset.day));
+    });
+  });
+
+  // 이름 클릭 → 인라인 편집
+  wrap.querySelectorAll('.editable-name').forEach(span => {
+    span.addEventListener('click', e => {
+      e.stopPropagation();
+      if (span.querySelector('input')) return; // 이미 편집 중
+      const oldName = span.textContent;
+      const inp = document.createElement('input');
+      inp.type = 'text';
+      inp.value = oldName;
+      inp.className = 'place-name-input';
+      inp.style.cssText = 'width:100%;font-size:inherit;font-weight:inherit;border:none;border-bottom:2px solid #1a6e8a;background:transparent;outline:none;padding:0;';
+      span.textContent = '';
+      span.appendChild(inp);
+      inp.focus();
+      inp.select();
+      const commit = () => {
+        const newName = inp.value.trim() || oldName;
+        const id  = span.dataset.id;
+        const day = parseInt(span.dataset.day);
+        const pl  = state.itin[day]?.find(p => p.id === id);
+        if (pl) { pl.name = newName; saveState(); }
+        span.textContent = newName;
+      };
+      inp.addEventListener('blur', commit);
+      inp.addEventListener('keydown', ev => {
+        if (ev.key === 'Enter') { ev.preventDefault(); inp.blur(); }
+        if (ev.key === 'Escape') { inp.value = oldName; inp.blur(); }
+      });
     });
   });
 
