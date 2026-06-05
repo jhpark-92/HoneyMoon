@@ -562,6 +562,17 @@ const NAME_KO_MAP = {
   'antalya limani':                 '안탈리아 항구',
   'antalya limanı':                 '안탈리아 항구',
 
+  // ── 안탈리아 쇼핑·식당 ──
+  'antalya migros shopping center': '안탈리아 마이그로스 쇼핑센터',
+  'migros shopping center':         '마이그로스 쇼핑센터',
+  'markantalya mall':               '마크안탈리아 몰',
+  'mark antalya':                   '마크안탈리아 몰',
+  'arma restaurant':                '아르마 레스토랑',
+  'vanilla lounge':                 '바닐라 라운지',
+  '7 mehmet restaurant':            '7 메흐메트 레스토랑',
+  'Club Arma':                      '클럽 아르마',
+  'club arma':                      '클럽 아르마',
+
   // ── 식당·카페 ──
   'tarihi sultanahmet köftecisi selim usta': '타리히 술타나흐메트 쾨프테지시',
   'tarihi sultanahmet koftecisi selim usta': '타리히 술타나흐메트 쾨프테지시',
