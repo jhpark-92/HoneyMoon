@@ -2764,16 +2764,6 @@ async function init() {
   initTabsNav();
   initNotes();
 
-  // 교통 가이드 모달
-  const transportBtn   = document.getElementById('transportBtn');
-  const transportModal = document.getElementById('transportModal');
-  const transportClose = document.getElementById('transportModalClose');
-  if (transportBtn && transportModal) {
-    transportBtn.addEventListener('click', () => transportModal.classList.add('open'));
-    transportClose.addEventListener('click', () => transportModal.classList.remove('open'));
-    transportModal.addEventListener('click', e => { if (e.target === transportModal) transportModal.classList.remove('open'); });
-  }
-
   document.getElementById('overviewBtn').addEventListener('click', showOverview);
   document.getElementById('fitDayBtn').addEventListener('click', () => renderRoute(state.day));
   // 장소 카드 닫기
@@ -2857,8 +2847,91 @@ async function init() {
 //  NOTES PANEL
 // ════════════════════════════════════════
 
+function buildAirportRoutes() {
+  const ROUTES = [
+    {
+      day: 'Day 1 입국', color: '#E57373',
+      title: 'IST 이스탄불 공항 → 엘리시움 탁심호텔',
+      note: '탁심광장 바로 인근 · 탑승: 공항 1층 D2 출구 하바이스트 정류장',
+      options: [
+        { icon: '🚌', label: '하바이스트 버스', rec: true, price: '275 TL (약 9,500원)', time: '80~100분', where: '하차: 탁심광장 Point Hotel 앞' },
+        { icon: '🚇', label: '메트로 M11→M2', price: '70 TL (약 2,400원)', time: '45~55분', where: 'Gayrettepe 환승 → 탁심역' },
+        { icon: '🚕', label: '택시', price: '1,200~2,000 TL (약 41,000~68,000원)', time: '45~60분', where: '입국장 바로 앞 택시 승강장' },
+      ],
+    },
+    {
+      day: 'Day 5 출국', color: '#7986CB',
+      title: '엘리시움 탁심호텔 → IST 이스탄불 공항',
+      note: 'TK2006 13:45 출발 · 호텔 출발 10:00~10:30 권장',
+      options: [
+        { icon: '🚌', label: '하바이스트 버스', rec: true, price: '275 TL (약 9,500원)', time: '80~100분', where: '탁심광장 Point Hotel 앞 정류장 (도보 5분)' },
+        { icon: '🚇', label: '메트로 M2→M11', price: '70 TL (약 2,400원)', time: '45~55분', where: '탁심역 → Gayrettepe 환승 → 공항역' },
+      ],
+    },
+    {
+      day: 'Day 5 도착', color: '#66BB6A',
+      title: 'NAV 네브셰히르 공항 → 로드오브카파도키아',
+      note: 'TK2006 15:05 도착 · 카파도키아는 대중교통 없음 — 사전 예약 필수',
+      options: [
+        { icon: '🏨', label: '호텔 픽업', rec: true, price: '호텔 문의', time: '~30분', where: '도착 터미널 출구 · 호텔 기사가 이름 팻말 들고 대기' },
+        { icon: '🚕', label: '택시', price: '300~500 TL (약 10,200~17,000원)', time: '30~40분', where: '도착 터미널 정문 앞 택시 승강장' },
+      ],
+    },
+    {
+      day: 'Day 7 출발', color: '#26A69A',
+      title: '로드오브카파도키아 → ASR 카이세리 공항',
+      note: 'XQ7033 21:20 출발 · 호텔 출발 19:00~19:30 권장 (80km 야간)',
+      options: [
+        { icon: '🏨', label: '호텔 샌딩', rec: true, price: '1,500~2,000 TL (약 51,000~68,000원)', time: '1~1.5시간', where: '호텔 정문 픽업' },
+        { icon: '🚌', label: '공유 셔틀', price: '10~15 EUR (약 15,000~22,000원)', time: '1.5시간+', where: '호텔 픽업 포함 · 마이리얼트립 사전 예약' },
+      ],
+    },
+    {
+      day: 'Day 7 도착', color: '#42A5F5',
+      title: 'AYT 안탈리아 공항 → 메가사라이 웨스트비치',
+      note: 'XQ7033 22:40 도착 · 야간 — 호텔 픽업 강력 추천',
+      options: [
+        { icon: '🏨', label: '호텔 픽업', rec: true, price: '호텔 문의', time: '~30분', where: '도착 터미널 출구 · 호텔 기사 대기' },
+        { icon: '🚕', label: '택시', price: '$16~20 (약 22,000~28,000원)', time: '22~32분', where: '도착 터미널 1층 출구 바로 앞 택시 승강장' },
+      ],
+    },
+  ];
+
+  let html = `<div class="tg-airport-section">
+    <div class="tg-airport-title">✈️ 공항·호텔 이동 <span class="tg-airport-sub">1 TRY ≈ 34원 기준</span></div>`;
+
+  ROUTES.forEach(r => {
+    html += `<div class="tg-airport-route">
+      <div class="tg-airport-route-header">
+        <span class="tg-airport-badge" style="background:${r.color}">${r.day}</span>
+        <span class="tg-airport-route-title">${r.title}</span>
+      </div>
+      <div class="tg-airport-note">${r.note}</div>`;
+
+    r.options.forEach(o => {
+      html += `<div class="tg-airport-option${o.rec ? ' tg-airport-rec' : ''}">
+        <span class="tg-airport-icon">${o.icon}</span>
+        <div class="tg-airport-info">
+          <div class="tg-airport-label">${o.label}${o.rec ? ' <span class="tg-rec-dot">추천</span>' : ''}</div>
+          <div class="tg-airport-details">
+            <span class="tg-airport-price">${o.price}</span>
+            <span class="tg-airport-sep">·</span>
+            <span class="tg-airport-time">${o.time}</span>
+          </div>
+          <div class="tg-airport-where">${o.where}</div>
+        </div>
+      </div>`;
+    });
+
+    html += `</div>`;
+  });
+
+  html += `</div><div class="tg-divider"></div>`;
+  return html;
+}
+
 function buildTransportGuide() {
-  let html = '';
+  let html = buildAirportRoutes();
   const CITY_TIPS = {
     istanbul:   '이스탄불카트로 T1 트램·지하철 이용 가능',
     cappadocia: '렌터카 or 현지 투어 차량 추천',
