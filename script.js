@@ -2764,6 +2764,16 @@ async function init() {
   initTabsNav();
   initNotes();
 
+  // 교통 가이드 모달
+  const transportBtn   = document.getElementById('transportBtn');
+  const transportModal = document.getElementById('transportModal');
+  const transportClose = document.getElementById('transportModalClose');
+  if (transportBtn && transportModal) {
+    transportBtn.addEventListener('click', () => transportModal.classList.add('open'));
+    transportClose.addEventListener('click', () => transportModal.classList.remove('open'));
+    transportModal.addEventListener('click', e => { if (e.target === transportModal) transportModal.classList.remove('open'); });
+  }
+
   document.getElementById('overviewBtn').addEventListener('click', showOverview);
   document.getElementById('fitDayBtn').addEventListener('click', () => renderRoute(state.day));
   // 장소 카드 닫기

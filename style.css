@@ -1591,6 +1591,157 @@ header {
   font-weight: 500;
 }
 
+/* ── 교통 가이드 버튼 ── */
+.transport-btn {
+  background: rgba(255,255,255,0.15);
+  border: 1.5px solid rgba(255,255,255,0.28);
+  border-radius: 8px;
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-family: inherit;
+  padding: 0 11px;
+  height: 32px;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: background 0.15s;
+  white-space: nowrap;
+  opacity: 0.85;
+}
+.transport-btn:hover { background: rgba(255,255,255,0.28); opacity: 1; }
+
+/* ── 교통 가이드 모달 ── */
+.transport-modal-box {
+  background: white;
+  border-radius: 18px;
+  padding: 24px 28px 28px;
+  position: relative;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+  width: 96%;
+  max-width: 780px;
+  max-height: 88vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.transport-modal-sub {
+  font-size: 0.72rem;
+  color: var(--text-light);
+  margin: -4px 0 18px;
+  text-align: center;
+}
+.tr-route {
+  border-bottom: 1.5px solid var(--border);
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+}
+.tr-route-header {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 7px;
+  flex-wrap: wrap;
+}
+.tr-day-badge {
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: white;
+  padding: 3px 9px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.tr-route-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.tr-note {
+  font-size: 0.72rem;
+  color: var(--text-mid);
+  margin-bottom: 10px;
+  padding: 5px 10px;
+  background: #f8f3ee;
+  border-radius: 7px;
+}
+.tr-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.76rem;
+  margin-bottom: 8px;
+}
+.tr-table thead tr { background: #f5f0e8; }
+.tr-table th {
+  padding: 7px 10px;
+  text-align: left;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-light);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.tr-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid #f0ebe4;
+  vertical-align: top;
+  line-height: 1.5;
+  color: var(--text);
+}
+.tr-table tr:last-child td { border-bottom: none; }
+.tr-rec-row { background: rgba(26,110,138,0.04); }
+.tr-rec-row td:first-child { font-weight: 600; }
+.tr-rec-badge {
+  display: inline-block;
+  font-size: 0.58rem;
+  font-weight: 700;
+  background: var(--primary);
+  color: white;
+  padding: 1px 6px;
+  border-radius: 8px;
+  margin-top: 2px;
+}
+.tr-route-code {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--flight);
+  background: rgba(123,104,238,0.1);
+  padding: 1px 5px;
+  border-radius: 5px;
+  margin-top: 2px;
+}
+.tr-table td strong {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--primary-dark);
+}
+.tr-sub {
+  font-size: 0.64rem;
+  color: var(--text-light);
+  display: block;
+  margin-top: 2px;
+}
+.tr-tip {
+  font-size: 0.68rem;
+  color: var(--text-mid);
+  padding: 5px 10px;
+  background: rgba(26,110,138,0.05);
+  border-left: 3px solid var(--primary-light);
+  border-radius: 0 6px 6px 0;
+  line-height: 1.5;
+}
+@media (max-width: 768px) {
+  .transport-btn { display: none; }
+  .transport-modal-box { padding: 18px 14px 20px; }
+  .tr-table { font-size: 0.7rem; }
+  .tr-table th { font-size: 0.6rem; padding: 6px 7px; }
+  .tr-table td { padding: 8px 7px; }
+  .tr-route-title { font-size: 0.8rem; }
+}
+
 /* ── 메모 패널 ── */
 .notes-open-btn {
   background: rgba(255,255,255,0.15);

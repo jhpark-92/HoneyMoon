@@ -25,6 +25,7 @@
     </div>
   </div>
   <div class="hd-right">
+    <button class="transport-btn" id="transportBtn" title="교통 가이드">🚗 교통</button>
     <button class="notes-open-btn" id="notesBtn" title="메모">📋</button>
     <div class="hd-hotels">
       <div class="hotel-chip">
@@ -99,6 +100,152 @@
 </div>
 
 
+
+<!-- 교통 가이드 모달 -->
+<div class="qr-modal" id="transportModal">
+  <div class="transport-modal-box">
+    <button class="qr-modal-close" id="transportModalClose">✕</button>
+    <p class="qr-modal-title">🚗 교통 가이드</p>
+    <p class="transport-modal-sub">5대 핵심 이동 루트 · 1 TRY ≈ 34원 기준</p>
+
+    <div class="tr-route">
+      <div class="tr-route-header">
+        <span class="tr-day-badge" style="background:#E57373">Day 1 입국</span>
+        <span class="tr-route-title">✈️ IST 이스탄불 공항 → 엘리시움 탁심호텔</span>
+      </div>
+      <div class="tr-note">탁심광장 바로 인근 호텔이라 교통이 편해요.</div>
+      <table class="tr-table">
+        <thead><tr><th>수단</th><th>비용</th><th>소요시간</th><th>탑승위치</th></tr></thead>
+        <tbody>
+          <tr class="tr-rec-row">
+            <td>🚌 하바이스트 버스<br><span class="tr-rec-badge">추천</span></td>
+            <td>275 TL<br><strong>약 9,500원</strong></td>
+            <td>80~100분</td>
+            <td>공항 1층 D2 출구<br>→ 하바이스트 정류장 탑승<br><span class="tr-sub">하차: 탁심광장 Point Hotel 앞</span></td>
+          </tr>
+          <tr>
+            <td>🚇 메트로<br><span class="tr-route-code">M11 → M2</span></td>
+            <td>70 TL<br><strong>약 2,400원</strong></td>
+            <td>45~55분</td>
+            <td>공항 지하 M11역<br>→ Gayrettepe 환승 M2<br><span class="tr-sub">탁심역 하차</span></td>
+          </tr>
+          <tr>
+            <td>🚕 택시</td>
+            <td>1,200~2,000 TL<br><strong>약 41,000~68,000원</strong></td>
+            <td>45~60분</td>
+            <td>입국장 나오면<br>바로 택시 승강장</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="tr-tip">💡 짐 많으면 하바이스트 버스 추천. 30~40분 간격 운행, 카드·QR 결제 가능.</div>
+    </div>
+
+    <div class="tr-route">
+      <div class="tr-route-header">
+        <span class="tr-day-badge" style="background:#7986CB">Day 5 출국</span>
+        <span class="tr-route-title">✈️ 엘리시움 탁심호텔 → IST 이스탄불 공항</span>
+      </div>
+      <div class="tr-note">TK2006 13:45 출발 · <strong>호텔 출발 10:00~10:30</strong> 권장</div>
+      <table class="tr-table">
+        <thead><tr><th>수단</th><th>비용</th><th>소요시간</th><th>탑승위치</th></tr></thead>
+        <tbody>
+          <tr class="tr-rec-row">
+            <td>🚌 하바이스트 버스<br><span class="tr-rec-badge">추천</span></td>
+            <td>275 TL<br><strong>약 9,500원</strong></td>
+            <td>80~100분</td>
+            <td>탁심광장<br><strong>Point Hotel 앞 정류장</strong><br><span class="tr-sub">호텔에서 도보 5분</span></td>
+          </tr>
+          <tr>
+            <td>🚇 메트로<br><span class="tr-route-code">M2 → M11</span></td>
+            <td>70 TL<br><strong>약 2,400원</strong></td>
+            <td>45~55분</td>
+            <td>탁심역 M2<br>→ Gayrettepe 환승 M11<br><span class="tr-sub">이스탄불 공항역 하차</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="tr-tip">💡 Havaist 앱에서 출발 시간 미리 확인 후 탑승 추천.</div>
+    </div>
+
+    <div class="tr-route">
+      <div class="tr-route-header">
+        <span class="tr-day-badge" style="background:#66BB6A">Day 5 도착</span>
+        <span class="tr-route-title">✈️ NAV 네브셰히르 공항 → 로드오브카파도키아</span>
+      </div>
+      <div class="tr-note">TK2006 15:05 도착 · 카파도키아는 대중교통 없음</div>
+      <table class="tr-table">
+        <thead><tr><th>수단</th><th>비용</th><th>소요시간</th><th>탑승위치</th></tr></thead>
+        <tbody>
+          <tr class="tr-rec-row">
+            <td>🏨 호텔 픽업<br><span class="tr-rec-badge">추천</span></td>
+            <td>호텔 문의</td>
+            <td>~30분</td>
+            <td>도착 터미널 출구<br><span class="tr-sub">호텔 기사가 이름 팻말 들고 대기</span></td>
+          </tr>
+          <tr>
+            <td>🚕 택시</td>
+            <td>300~500 TL<br><strong>약 10,200~17,000원</strong></td>
+            <td>30~40분</td>
+            <td>도착 터미널<br>정문 앞 택시 승강장</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="tr-tip">⚠️ 호텔에 비행편(TK2006, 15:05 NAV 도착) 알려주고 사전 픽업 예약 필수!</div>
+    </div>
+
+    <div class="tr-route">
+      <div class="tr-route-header">
+        <span class="tr-day-badge" style="background:#26A69A">Day 7 출발</span>
+        <span class="tr-route-title">✈️ 로드오브카파도키아 → ASR 카이세리 공항</span>
+      </div>
+      <div class="tr-note">XQ7033 21:20 출발 · <strong>호텔 출발 19:00~19:30</strong> 권장 (80km)</div>
+      <table class="tr-table">
+        <thead><tr><th>수단</th><th>비용</th><th>소요시간</th><th>탑승위치</th></tr></thead>
+        <tbody>
+          <tr class="tr-rec-row">
+            <td>🏨 호텔 샌딩<br><span class="tr-rec-badge">추천</span></td>
+            <td>1,500~2,000 TL<br><strong>약 51,000~68,000원</strong></td>
+            <td>1시간~1시간 30분</td>
+            <td>호텔 정문 픽업</td>
+          </tr>
+          <tr>
+            <td>🚌 공유 셔틀</td>
+            <td>10~15 EUR<br><strong>약 15,000~22,000원</strong></td>
+            <td>1시간 30분+</td>
+            <td>호텔 픽업 포함<br><span class="tr-sub">마이리얼트립 등 사전 예약</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="tr-tip">⚠️ 야간 장거리 이동 — 호텔 샌딩 또는 사설 트랜스퍼 강력 추천.</div>
+    </div>
+
+    <div class="tr-route" style="border-bottom:none;margin-bottom:0;padding-bottom:0">
+      <div class="tr-route-header">
+        <span class="tr-day-badge" style="background:#42A5F5">Day 7 도착</span>
+        <span class="tr-route-title">✈️ AYT 안탈리아 공항 → 메가사라이 웨스트비치</span>
+      </div>
+      <div class="tr-note">XQ7033 22:40 도착 · 야간 도착이라 픽업 예약 강력 추천</div>
+      <table class="tr-table">
+        <thead><tr><th>수단</th><th>비용</th><th>소요시간</th><th>탑승위치</th></tr></thead>
+        <tbody>
+          <tr class="tr-rec-row">
+            <td>🏨 호텔 픽업<br><span class="tr-rec-badge">추천</span></td>
+            <td>호텔 문의</td>
+            <td>~30분</td>
+            <td>도착 터미널 출구<br><span class="tr-sub">호텔 기사 대기</span></td>
+          </tr>
+          <tr>
+            <td>🚕 택시</td>
+            <td>$16~20<br><strong>약 22,000~28,000원</strong></td>
+            <td>22~32분</td>
+            <td>도착 터미널 1층<br>출구 바로 앞 택시 승강장</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="tr-tip">⚠️ 호텔에 XQ7033, 22:40 AYT 도착 알려주고 사전 픽업 예약 필수!</div>
+    </div>
+
+  </div>
+</div>
 
 <!-- 메모 패널 -->
 <div class="notes-panel" id="notesPanel">
