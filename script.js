@@ -2045,7 +2045,8 @@ function renderItin() {
         ${badge}
         <div class="place-content">
           <div class="place-name-row">
-            <span class="place-name">${esc(pl.name)}</span>
+            <span class="place-name" data-id="${pl.id}" data-day="${day}" title="탭해서 이름 수정">${esc(pl.name)}</span>
+            ${!isHotel ? `<button class="place-rename-btn" data-id="${pl.id}" data-day="${day}" title="이름 수정">✏️</button>` : ''}
             ${catLabel ? `<span class="place-cat-badge" style="background:${catColor}">${catLabel}</span>` : ''}
             ${!isHotel ? `<button class="place-copy" data-name="${esc(pl.name)}" title="이름 복사">⎘</button>` : ''}
             <button class="place-memo-btn${pl.memo ? ' has-memo' : ''}" data-id="${pl.id}" data-day="${day}" title="메모">📝</button>
@@ -2080,6 +2081,49 @@ function renderItin() {
   }
 
   wrap.innerHTML = html;
+
+  // 이름 인라인 편집
+  function startRename(id, dayNum, nameSpan) {
+    if (nameSpan.querySelector('input')) return; // 이미 편집 중
+    const currentName = nameSpan.textContent;
+    const inp = document.createElement('input');
+    inp.className = 'place-name-edit-input';
+    inp.value = currentName;
+    inp.maxLength = 60;
+    nameSpan.textContent = '';
+    nameSpan.appendChild(inp);
+    inp.focus();
+    inp.select();
+    function save() {
+      const newName = inp.value.trim() || currentName;
+      const pl = state.itin[dayNum]?.find(p => p.id === id);
+      if (pl && newName !== pl.name) {
+        pl.name = newName;
+        saveState();
+        renderItin();
+        renderRoute(dayNum);
+      } else {
+        nameSpan.textContent = currentName;
+      }
+    }
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); save(); }
+      if (e.key === 'Escape') { nameSpan.textContent = currentName; }
+    });
+    inp.addEventListener('blur', save);
+    inp.addEventListener('click', e => e.stopPropagation());
+  }
+
+  wrap.querySelectorAll('.place-rename-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      const dayNum = parseInt(btn.dataset.day);
+      const row = btn.closest('.place-name-row');
+      const nameSpan = row.querySelector('.place-name');
+      startRename(id, dayNum, nameSpan);
+    });
+  });
 
   wrap.querySelectorAll('.place-copy').forEach(btn => {
     btn.addEventListener('click', e => {

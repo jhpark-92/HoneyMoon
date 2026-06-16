@@ -349,6 +349,41 @@ header {
 }
 .place-copy:hover { color: var(--primary); }
 
+/* 이름 수정 버튼 */
+.place-rename-btn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 0.72rem;
+  color: #ccc;
+  padding: 0 2px;
+  line-height: 1;
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 1px;
+  transition: color 0.15s;
+}
+.place-rename-btn:hover { color: var(--accent); }
+
+/* 이름 인라인 편집 input */
+.place-name-edit-input {
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  border: none;
+  border-bottom: 2px solid var(--primary);
+  background: transparent;
+  outline: none;
+  width: 100%;
+  padding: 0 0 1px;
+  min-width: 80px;
+}
+@media (max-width: 768px) {
+  .place-name-edit-input { font-size: 0.82rem; }
+}
+
 .search-row { position: relative; }
 
 .search-input {
